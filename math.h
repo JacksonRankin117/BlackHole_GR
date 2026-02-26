@@ -372,9 +372,13 @@ namespace Math {
         }
 
         // ------------------------------------------------ Dot Product ------------------------------------------------
-        double dot(const Vec4& b) const 
-        {
+
+        constexpr double DotEuclidean(const Vec4& b) const noexcept {
             return T*b.T + X*b.X + Y*b.Y + Z*b.Z;
+        }
+
+        constexpr double DotMinkowski(const Vec4& b) const noexcept {
+            return -T*b.T + X*b.X + Y*b.Y + Z*b.Z;
         }
 
         // ---------------------------------------------- Spatial helpers ----------------------------------------------
