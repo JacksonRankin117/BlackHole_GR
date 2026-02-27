@@ -13,7 +13,7 @@ class Camera {
         Math::Vec3 GenerateRay(int px, int py) const
         {
             // Normalized device coordinates (pixel center)
-            double u = (px + 0.5) / width;   // 0 → 1
+            double u = (px + 0.5) / width;
             double v = (py + 0.5) / height;
 
             // Map to image plane

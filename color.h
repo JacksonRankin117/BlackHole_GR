@@ -4,11 +4,11 @@
 #include <fstream>
 #include <vector>
 
-struct Pixel {
+struct Color {
     float r, g, b;
 };
 
-void savePFM(const char* filename, int width, int height, const std::vector<Pixel>& data) {
+void SavePFM(const char* filename, int width, int height, const std::vector<Color>& data) {
     std::ofstream ofs(filename, std::ios::binary);
 
     // Write Header: PF (Color), Width Height, Aspect/Endianness
@@ -16,7 +16,7 @@ void savePFM(const char* filename, int width, int height, const std::vector<Pixe
 
     // Write Binary Data
     // We cast the pointer to char* to write raw bytes
-    ofs.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(Pixel));
+    ofs.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(Color));
 
     ofs.close();
     std::cout << "PFM file saved to " << filename << std::endl;
@@ -24,7 +24,7 @@ void savePFM(const char* filename, int width, int height, const std::vector<Pixe
 /*
  * EXAMPLE USAGE: (Makes a gradient)
  * ---------------------------------------------------------------------------------------------------------------------
- * 
+ *
  *  int main() {
  *      int width = 512;
  *      int height = 512;
@@ -37,7 +37,7 @@ void savePFM(const char* filename, int width, int height, const std::vector<Pixe
  *              // Normalized coordinates 0.0 to 1.0
  *              pixels[index].r = (float)x / width;
  *              pixels[index].g = (float)y / height;
- *              pixels[index].b = 0.5f; 
+ *              pixels[index].b = 0.5f;
  *          }
  *      }
  *
