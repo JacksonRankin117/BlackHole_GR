@@ -22,7 +22,7 @@ void savePFM(const char* filename, int width, int height, const std::vector<Pixe
     std::cout << "PFM file saved to " << filename << std::endl;
 }
 /*
- * EXAMPLE USAGE:
+ * EXAMPLE USAGE: (Makes a gradient)
  * ---------------------------------------------------------------------------------------------------------------------
  * 
  *  int main() {
