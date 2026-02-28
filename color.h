@@ -6,21 +6,22 @@
 
 struct Color {
     float r, g, b;
+
+    void static SaveImage(const char* filename, int width, int height, const std::vector<Color>& data) {
+        std::ofstream ofs(filename, std::ios::binary);
+
+        // Write Header: PF (Color), Width Height, Aspect/Endianness
+        ofs << "PF\n" << width << " " << height << "\n-1.0\n";
+
+        // Write Binary Data
+        // We cast the pointer to char* to write raw bytes
+        ofs.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(Color));
+
+        ofs.close();
+        std::cout << "\nPFM file saved to " << filename << std::endl;
+    }
 };
 
-void SavePFM(const char* filename, int width, int height, const std::vector<Color>& data) {
-    std::ofstream ofs(filename, std::ios::binary);
-
-    // Write Header: PF (Color), Width Height, Aspect/Endianness
-    ofs << "PF\n" << width << " " << height << "\n-1.0\n";
-
-    // Write Binary Data
-    // We cast the pointer to char* to write raw bytes
-    ofs.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(Color));
-
-    ofs.close();
-    std::cout << "PFM file saved to " << filename << std::endl;
-}
 /*
  * EXAMPLE USAGE: (Makes a gradient)
  * ---------------------------------------------------------------------------------------------------------------------

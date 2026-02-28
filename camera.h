@@ -1,4 +1,5 @@
 #include "math.h"
+#include "ray.h"
 
 class Camera {
     public:
@@ -9,33 +10,36 @@ class Camera {
             BuildBasis(target, up_hint);
         }
 
-        // Generate a ray per pixel
-        Math::Vec3 GenerateRay(int px, int py) const
+        Ray GenerateRay(int px, int py) const
         {
-            // Normalized device coordinates (pixel center)
+            // --- Normalized device coordinates ---
             double u = (px + 0.5) / width;
             double v = (py + 0.5) / height;
 
-            // Map to image plane
-            double x = 2.0 * u - 1.0;        // -1 -> +1
-            double y = 1.0 - 2.0 * v;        // +1 -> -1
+            // --- Image plane ---
+            double x = 2.0 * u - 1.0;
+            double y = 1.0 - 2.0 * v;
 
-            // Aspect ratio correction
             double aspect = double(height) / width;
             y *= aspect;
 
-            // FOV scaling
             double scale = std::tan(FOV * 0.5);
             x *= scale;
             y *= scale;
 
-            // World-space ray
-            Math::Vec3 dir =
+            // --- Direction in world space ---
+            Math::Vec3 dir3 =
                 forward +
                 x * right +
                 y * up;
 
-            return dir.Normalize();
+            dir3 = dir3.Normalize();
+
+            // --- Convert to Vec4 ---
+            Math::Vec4 origin4(pos.X, pos.Y, pos.Z, 1.0);  // point
+            Math::Vec4 dir4(dir3.X, dir3.Y, dir3.Z, 0.0);  // direction
+
+            return Ray(origin4, dir4);
         }
 
     private:
