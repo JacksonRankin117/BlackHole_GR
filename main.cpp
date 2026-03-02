@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
     // Initialize camera
     Camera cam = Camera(width,                 // Image width
                         height,                // Image height
-                        90.0,                 // Field of view in degrees
+                        90.0,                  // Field of view in degrees
                         {-100.0, 50.0, 20.0},  // Camera position
                         {0.0, 0.0, 0.0},       // Target position
                         {0, 1, 0});            // Up direction (z-axis is up)
