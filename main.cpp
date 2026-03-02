@@ -61,6 +61,8 @@ int main(int argc, char* argv[])
                 0.5f * ((float)dir.Z + 1.0f)
             };
 
+            // Add a ball at the origin
+
             // Add the Color to the image as a pixel
             image.push_back(c);
         }
