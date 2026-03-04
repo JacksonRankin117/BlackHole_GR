@@ -4,9 +4,12 @@
 CMakeFiles/main.dir/main.cpp.o: /home/jackson-rankin/Developer/BlackHole_GR/main.cpp \
   /home/jackson-rankin/Developer/BlackHole_GR/camera.h \
   /home/jackson-rankin/Developer/BlackHole_GR/color.h \
+  /home/jackson-rankin/Developer/BlackHole_GR/hittable.h \
+  /home/jackson-rankin/Developer/BlackHole_GR/material.h \
   /home/jackson-rankin/Developer/BlackHole_GR/math.h \
   /home/jackson-rankin/Developer/BlackHole_GR/physics.h \
   /home/jackson-rankin/Developer/BlackHole_GR/ray.h \
+  /home/jackson-rankin/Developer/BlackHole_GR/sphere.h \
   /usr/include/alloca.h \
   /usr/include/asm-generic/errno-base.h \
   /usr/include/asm-generic/errno.h \
@@ -269,11 +272,9 @@ CMakeFiles/main.dir/main.cpp.o: /home/jackson-rankin/Developer/BlackHole_GR/main
 
 /usr/include/x86_64-linux-gnu/sys/types.h:
 
-/usr/include/c++/13/pstl/execution_defs.h:
+/usr/include/x86_64-linux-gnu/sys/single_threaded.h:
 
-/usr/include/c++/13/bits/basic_ios.tcc:
-
-/usr/include/x86_64-linux-gnu/c++/13/bits/gthr.h:
+/usr/include/x86_64-linux-gnu/sys/cdefs.h:
 
 /usr/include/c++/13/iomanip:
 
@@ -309,10 +310,6 @@ CMakeFiles/main.dir/main.cpp.o: /home/jackson-rankin/Developer/BlackHole_GR/main
 
 /usr/include/x86_64-linux-gnu/c++/13/bits/c++allocator.h:
 
-/usr/include/c++/13/ostream:
-
-/usr/include/c++/13/tr1/riemann_zeta.tcc:
-
 /usr/include/c++/13/cmath:
 
 /usr/include/x86_64-linux-gnu/c++/13/bits/error_constants.h:
@@ -328,12 +325,6 @@ CMakeFiles/main.dir/main.cpp.o: /home/jackson-rankin/Developer/BlackHole_GR/main
 /usr/include/c++/13/bits/stl_pair.h:
 
 /usr/include/x86_64-linux-gnu/bits/errno.h:
-
-/usr/include/c++/13/bits/vector.tcc:
-
-/usr/include/c++/13/optional:
-
-/usr/include/c++/13/bits/exception_ptr.h:
 
 /usr/include/c++/13/bits/max_size_type.h:
 
@@ -391,9 +382,9 @@ CMakeFiles/main.dir/main.cpp.o: /home/jackson-rankin/Developer/BlackHole_GR/main
 
 /usr/include/c++/13/bits/ranges_cmp.h:
 
-/usr/include/c++/13/iosfwd:
-
 /usr/include/c++/13/bits/predefined_ops.h:
+
+/usr/include/c++/13/iosfwd:
 
 /usr/include/c++/13/istream:
 
@@ -407,8 +398,6 @@ CMakeFiles/main.dir/main.cpp.o: /home/jackson-rankin/Developer/BlackHole_GR/main
 
 /usr/include/c++/13/bits/ranges_algobase.h:
 
-/usr/include/c++/13/bits/ostream_insert.h:
-
 /usr/include/c++/13/compare:
 
 /usr/include/c++/13/system_error:
@@ -417,15 +406,23 @@ CMakeFiles/main.dir/main.cpp.o: /home/jackson-rankin/Developer/BlackHole_GR/main
 
 /usr/include/x86_64-linux-gnu/bits/thread-shared-types.h:
 
-/usr/include/c++/13/bits/exception.h:
+/usr/include/c++/13/bits/quoted_string.h:
 
-/usr/include/x86_64-linux-gnu/bits/stdlib-float.h:
+/usr/include/c++/13/bits/ptr_traits.h:
 
-/usr/include/x86_64-linux-gnu/bits/uintn-identity.h:
+/usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h:
 
-/usr/include/c++/13/bits/cxxabi_init_exception.h:
+/home/jackson-rankin/Developer/BlackHole_GR/material.h:
+
+/usr/include/x86_64-linux-gnu/c++/13/bits/os_defines.h:
 
 /usr/include/c++/13/bits/cxxabi_forced.h:
+
+/home/jackson-rankin/Developer/BlackHole_GR/sphere.h:
+
+/home/jackson-rankin/Developer/BlackHole_GR/hittable.h:
+
+/usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h:
 
 /usr/include/c++/13/debug/assertions.h:
 
@@ -438,12 +435,6 @@ CMakeFiles/main.dir/main.cpp.o: /home/jackson-rankin/Developer/BlackHole_GR/main
 /usr/include/c++/13/bits/move.h:
 
 /usr/include/c++/13/bits/locale_facets.h:
-
-/usr/include/c++/13/bits/localefwd.h:
-
-/usr/include/c++/13/bits/streambuf_iterator.h:
-
-/usr/include/x86_64-linux-gnu/bits/flt-eval-method.h:
 
 /usr/include/c++/13/bits/streambuf.tcc:
 
@@ -485,33 +476,39 @@ CMakeFiles/main.dir/main.cpp.o: /home/jackson-rankin/Developer/BlackHole_GR/main
 
 /home/jackson-rankin/Developer/BlackHole_GR/color.h:
 
-/usr/include/c++/13/algorithm:
-
-/usr/include/c++/13/bits/istream.tcc:
-
-/usr/include/c++/13/bits/locale_conv.h:
-
 /usr/include/c++/13/bits/refwrap.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h:
 
 /usr/include/c++/13/bits/fstream.tcc:
 
-/usr/include/c++/13/bits/ptr_traits.h:
-
-/usr/include/x86_64-linux-gnu/c++/13/bits/c++locale.h:
-
-/usr/include/x86_64-linux-gnu/c++/13/bits/os_defines.h:
-
-/usr/include/c++/13/bits/enable_special_members.h:
+/usr/include/c++/13/algorithm:
 
 /usr/include/c++/13/bit:
 
 /usr/include/c++/13/bits/basic_string.tcc:
 
+/usr/include/c++/13/bits/enable_special_members.h:
+
+/usr/include/c++/13/ext/string_conversions.h:
+
+/home/jackson-rankin/Developer/BlackHole_GR/camera.h:
+
+/usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h:
+
 /usr/include/alloca.h:
 
 /home/jackson-rankin/Developer/BlackHole_GR/physics.h:
+
+/usr/include/c++/13/bits/uniform_int_dist.h:
+
+/usr/include/c++/13/bits/locale_classes.tcc:
+
+/usr/include/c++/13/bits/ostream_insert.h:
+
+/usr/include/c++/13/ostream:
+
+/usr/include/c++/13/tr1/riemann_zeta.tcc:
 
 /usr/include/c++/13/cassert:
 
@@ -521,15 +518,43 @@ CMakeFiles/main.dir/main.cpp.o: /home/jackson-rankin/Developer/BlackHole_GR/main
 
 /home/jackson-rankin/Developer/BlackHole_GR/ray.h:
 
+/usr/include/x86_64-linux-gnu/sys/select.h:
+
+/usr/include/c++/13/cwchar:
+
 /usr/include/c++/13/bits/hash_bytes.h:
 
 /usr/include/x86_64-linux-gnu/bits/math-vector.h:
 
-/usr/include/c++/13/ext/string_conversions.h:
+/usr/include/c++/13/bits/localefwd.h:
 
-/home/jackson-rankin/Developer/BlackHole_GR/camera.h:
+/usr/include/c++/13/bits/streambuf_iterator.h:
 
-/usr/include/x86_64-linux-gnu/c++/13/bits/cpu_defines.h:
+/usr/include/x86_64-linux-gnu/bits/flt-eval-method.h:
+
+/usr/include/c++/13/bits/cxxabi_init_exception.h:
+
+/usr/include/c++/13/bits/exception.h:
+
+/usr/include/x86_64-linux-gnu/bits/stdlib-float.h:
+
+/usr/include/x86_64-linux-gnu/bits/uintn-identity.h:
+
+/usr/include/c++/13/bits/exception_ptr.h:
+
+/usr/include/c++/13/bits/locale_conv.h:
+
+/usr/include/c++/13/bits/istream.tcc:
+
+/usr/include/c++/13/bits/vector.tcc:
+
+/usr/include/c++/13/optional:
+
+/usr/include/c++/13/bits/basic_ios.tcc:
+
+/usr/include/c++/13/pstl/execution_defs.h:
+
+/usr/include/x86_64-linux-gnu/c++/13/bits/gthr.h:
 
 /home/jackson-rankin/Developer/BlackHole_GR/main.cpp:
 
@@ -550,12 +575,6 @@ CMakeFiles/main.dir/main.cpp.o: /home/jackson-rankin/Developer/BlackHole_GR/main
 /usr/include/c++/13/bits/iterator_concepts.h:
 
 /usr/include/x86_64-linux-gnu/bits/mathcalls.h:
-
-/usr/include/c++/13/bits/quoted_string.h:
-
-/usr/include/c++/13/bits/uniform_int_dist.h:
-
-/usr/include/c++/13/bits/locale_classes.tcc:
 
 /usr/include/c++/13/bits/locale_facets_nonio.h:
 
@@ -596,8 +615,6 @@ CMakeFiles/main.dir/main.cpp.o: /home/jackson-rankin/Developer/BlackHole_GR/main
 /usr/include/c++/13/tr1/hypergeometric.tcc:
 
 /usr/include/c++/13/type_traits:
-
-/usr/include/x86_64-linux-gnu/sys/single_threaded.h:
 
 /usr/include/c++/13/tr1/legendre_function.tcc:
 
@@ -656,8 +673,6 @@ CMakeFiles/main.dir/main.cpp.o: /home/jackson-rankin/Developer/BlackHole_GR/main
 /usr/include/c++/13/bits/stl_iterator.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h:
-
-/usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h:
 
 /usr/include/x86_64-linux-gnu/bits/byteswap.h:
 
@@ -776,9 +791,3 @@ CMakeFiles/main.dir/main.cpp.o: /home/jackson-rankin/Developer/BlackHole_GR/main
 /usr/include/x86_64-linux-gnu/c++/13/bits/gthr-default.h:
 
 /usr/include/x86_64-linux-gnu/gnu/stubs-64.h:
-
-/usr/include/x86_64-linux-gnu/sys/cdefs.h:
-
-/usr/include/c++/13/cwchar:
-
-/usr/include/x86_64-linux-gnu/sys/select.h:

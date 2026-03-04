@@ -5,9 +5,12 @@ CMakeFiles/main.dir/main.cpp.o
  /home/jackson-rankin/Developer/BlackHole_GR/main.cpp
  /home/jackson-rankin/Developer/BlackHole_GR/camera.h
  /home/jackson-rankin/Developer/BlackHole_GR/color.h
+ /home/jackson-rankin/Developer/BlackHole_GR/hittable.h
+ /home/jackson-rankin/Developer/BlackHole_GR/material.h
  /home/jackson-rankin/Developer/BlackHole_GR/math.h
  /home/jackson-rankin/Developer/BlackHole_GR/physics.h
  /home/jackson-rankin/Developer/BlackHole_GR/ray.h
+ /home/jackson-rankin/Developer/BlackHole_GR/sphere.h
  /usr/include/alloca.h
  /usr/include/asm-generic/errno-base.h
  /usr/include/asm-generic/errno.h

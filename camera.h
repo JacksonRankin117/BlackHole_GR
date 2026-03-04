@@ -12,34 +12,25 @@ class Camera {
 
         Ray GenerateRay(int px, int py) const
         {
-            // --- Normalized device coordinates ---
             double u = (px + 0.5) / width;
             double v = (py + 0.5) / height;
 
-            // --- Image plane ---
             double x = 2.0 * u - 1.0;
             double y = 1.0 - 2.0 * v;
 
-            double aspect = double(height) / width;
-            y *= aspect;
+            double aspect = double(width) / height;  // <--- fix
+            x *= aspect;
 
             double scale = std::tan(FOV * 0.5);
             x *= scale;
             y *= scale;
 
-            // --- Direction in world space ---
-            Math::Vec3 dir3 =
-                forward +
-                x * right +
-                y * up;
+            Math::Vec3 dir3 = (forward + x*right + y*up).Normalize();
 
-            dir3 = dir3.Normalize();
-
-            // --- Convert to Vec4 ---
-            Math::Vec4 origin4(pos.X, pos.Y, pos.Z, 1.0);  // point
-            Math::Vec4 dir4(dir3.X, dir3.Y, dir3.Z, 0.0);  // direction
-
-            return Ray(origin4, dir4);
+            return Ray(
+                Math::Vec4(1.0, pos.X, pos.Y, pos.Z),
+                Math::Vec4(1.0, dir3.X, dir3.Y, dir3.Z)
+            );
         }
 
     private:
