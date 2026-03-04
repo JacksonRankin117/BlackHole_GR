@@ -1,80 +1,90 @@
 #include <iostream>
+#include <vector>
 #include <cmath>
-
-//#include "math.h"
-//#include "physics.h"
 
 #include "camera.h"
 #include "color.h"
 #include "ray.h"
+#include "sphere.h"
+#include "math.h"
 
 using namespace Math;
 
 int main(int argc, char* argv[])
 {
-    //----------------------------------------------- Initialize Camera ------------------------------------------------
-    // Dimensions of the image
-    int width = 1920;
-    int height = 1080;
+    // ---------------- Image Settings ----------------
+    const int width  = 1920;
+    const int height = 1080;
 
-    // Initialize camera
-    Camera cam = Camera(width,                 // Image width
-                        height,                // Image height
-                        90.0,                  // Field of view in degrees
-                        {-100.0, 50.0, 20.0},  // Camera position
-                        {0.0, 0.0, 0.0},       // Target position
-                        {0, 1, 0});            // Up direction (z-axis is up)
-
-    // ------------------------------------------------ Image Rendering ------------------------------------------------
-    // Stores the last progress of the render
-    double last_progress = -1.0;  // If we were to initialize it with 0.0, the program wouldn't print anything
-
-    // Store the image as a vector of pixels
     std::vector<Color> image;
+    image.reserve(width * height);
 
-    // Project rays through each pixel
+    // ---------------- Camera ----------------
+    Camera cam(
+        width,
+        height,
+        90.0,
+        {-100.0, 50.0, 20.0},   // camera position
+        {0.0, 0.0, 0.0},       // look at origin
+        {0.0, 1.0, 0.0}        // up direction
+    );
+
+    // ---------------- Sphere ----------------
+    Sphere sphere(
+        Vec4{0.0, 0.0, 0.0, 0.0},  // spacetime center
+        30.0,
+        nullptr                    // ignore material
+    );
+
+    // ---------------- Render ----------------
+    double last_progress = -1.0;
+
     for (int i = 0; i < height; i++)
     {
-        // --------------------------------------------- Progress Bar --------------------------------------------------
-        // Calculates progress
         double progress = std::round(1000.0 * i / height) / 10.0;
-
-        // If progress has changed, print the new one, otherwise continue
         if (progress != last_progress)
         {
             std::cout << "\rProgress: " << progress << "%" << std::flush;
             last_progress = progress;
         }
 
-        // -------------------------------------------- Ray Generation -------------------------------------------------
         for (int j = 0; j < width; j++)
         {
-            // Generate a ray through each pixel
             Ray ray = cam.GenerateRay(j, i);
 
-            //
-            Vec4 dir = ray.r_direct; // normalized
+            double lambda;
+            Color pixel;
 
-            Color c = {
-                0.5f * ((float)dir.X + 1.0f),
-                0.5f * ((float)dir.Y + 1.0f),
-                0.5f * ((float)dir.Z + 1.0f)
-            };
+            HitRecord rec;
 
-            // Add a ball at the origin
+            if (sphere.Intersect(ray, 0.001, 1e30, rec))
+            {
+                Vec3 normal = rec.normal;
 
-            // Add the Color to the image as a pixel
-            image.push_back(c);
+                pixel = {
+                    0.5f * ((float)normal.X + 1.0f),
+                    0.5f * ((float)normal.Y + 1.0f),
+                    0.5f * ((float)normal.Z + 1.0f)
+                };
+            } else {
+                // Sky gradient
+                Vec3 unit_dir = (Vec3{ ray.r_direct.X, ray.r_direct.Y, ray.r_direct.Z}).Normalize();
+
+                float t = 0.5f * (unit_dir.Y + 1.0f);
+
+                pixel =
+                    (1.0f - t) * Color{1.0f, 1.0f, 1.0f}
+                  + t * Color{0.5f, 0.7f, 1.0f};
+            }
+
+            image.push_back(pixel);
         }
     }
 
-    // Display 100.0%
-    std::cout << "\rProgress: 100.0%" << std::flush;
+    std::cout << "\rProgress: 100.0%" << std::endl;
 
-    // Save the image as a PFM file
+    // ---------------- Save Image ----------------
     Color::SaveImage("image.pfm", width, height, image);
-
-
 
     return 0;
 }

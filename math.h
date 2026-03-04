@@ -1,10 +1,10 @@
 /*   Programmer: Jackson Rankin
  *         Date: February 24th, 2026
  * Contact info: ran23008@byui.edu
- * 
+ *
  *     Overview: This file contains my own math library designed for my projects. It includes vector and matrix classes,
  *               as well as various mathematical functions that are commonly used in physics simulations. The Vec3 class
- *               represents a 3D vector, while the Vec4 class represents a 4D vector (useful for spacetime 
+ *               represents a 3D vector, while the Vec4 class represents a 4D vector (useful for spacetime
  *               calculations). The Matrix class is a general-purpose matrix class that can be used for transformations
  *               and other linear algebra operations.
  *
@@ -99,7 +99,7 @@ namespace Math {
 
             // ------------------------------------------- Vector Conversions ------------------------------------------
             [[nodiscard]] constexpr static Vec3 FromCylindrical(double rho, double phi, double z) noexcept {
-                /// This function takes cylindrical values, and returns a new Vec3 in Cartesian coordinates 
+                /// This function takes cylindrical values, and returns a new Vec3 in Cartesian coordinates
 
                 // Calculate the components
                 double x_comp = rho * std::cos(phi);
@@ -110,7 +110,7 @@ namespace Math {
             }
 
             [[nodiscard]] constexpr static Vec3 FromSpherical(double rho, double theta, double phi) noexcept{
-                /// This function takes spherical values, and returns a new Vec3 in Cartesian coordinates 
+                /// This function takes spherical values, and returns a new Vec3 in Cartesian coordinates
 
                 // Calculate the components
                 double x_comp = rho * std::sin(theta) * std::cos(phi);
@@ -144,7 +144,7 @@ namespace Math {
 
                 // Calculate the components
                 double rho_comp = v.Magnitude();
-                double theta_comp = std::acos(std::clamp(v.Z / rho_comp, -1.0, 1.0)); 
+                double theta_comp = std::acos(std::clamp(v.Z / rho_comp, -1.0, 1.0));
                 double phi_comp = std::atan2(v.Y, v.X);
 
                 return std::make_tuple(rho_comp, theta_comp, phi_comp);
@@ -152,7 +152,7 @@ namespace Math {
 
             // -------------------------------------------- Relational Math --------------------------------------------
             [[nodiscard]] constexpr static double AngleBetween(const Vec3& a, const Vec3& b) {
-                /// This method calculates the angle between any two vectors, and throws an error if either have 
+                /// This method calculates the angle between any two vectors, and throws an error if either have
                 /// near-zero magnitudes.
 
                 // Check if either magnitudes are too small. Remember that because we are checking MagnitudeSquared, we
@@ -185,7 +185,7 @@ namespace Math {
 
             [[nodiscard]] constexpr friend bool operator==(const Vec3& a, const Vec3& b) noexcept {
                 /// Determines if two vectors are within tolerance, which is 1e-12.
-                
+
                 // Checks every single difference between every component of the vector
                 return (std::abs(a.X - b.X) < epsilon) &&
                     (std::abs(a.Y - b.Y) < epsilon) &&
@@ -252,7 +252,7 @@ namespace Math {
                 Z -= other.Z;
 
                 return *this;
-            }    
+            }
 
             [[nodiscard]] constexpr static double Dot(const Vec3& a, const Vec3& b) noexcept {
                 /// This function returns the dot product between two vectors as a double
@@ -290,7 +290,7 @@ namespace Math {
 
                 |   -69.489611   -20.994045    96.062727 |
                 |     0.707107     0.707107     0.000000 |
-                
+
                 */
 
                 return os;
@@ -372,6 +372,9 @@ namespace Math {
         }
 
         // ------------------------------------------------ Dot Product ------------------------------------------------
+        constexpr double Dot(const Vec4& b) const noexcept { // Returns the spacial dot product
+            return X*b.X + Y*b.Y + Z*b.Z;
+        }
 
         constexpr double DotEuclidean(const Vec4& b) const noexcept {
             return T*b.T + X*b.X + Y*b.Y + Z*b.Z;
@@ -412,20 +415,20 @@ namespace Math {
             static constexpr double epsilon2 = 1e-6;
 
             // --------------------------------------------- Constructors ----------------------------------------------
-            
+
             Matrix() : rows(1), cols(1), data(1, 0.0) {}
 
-            Matrix(size_t r, size_t c, double init = 0.0) 
+            Matrix(size_t r, size_t c, double init = 0.0)
                 : rows(r), cols(c), data(r * c, init) {}
 
             // ------------------------------------------- Matrix Properties -------------------------------------------
-            
+
             double Determinant() const {
                 if (rows != cols) throw std::invalid_argument("Matrix must be square.");
-                
+
                 size_t n = rows;
                 // Copy data for decomposition
-                std::vector<double> temp = data; 
+                std::vector<double> temp = data;
                 double det = 1.0;
 
                 for (size_t i = 0; i < n; ++i) {
@@ -463,15 +466,15 @@ namespace Math {
             size_t numCols() const { return cols; }
 
             // 2D Accessors mapping to 1D index
-            double& operator()(size_t i, size_t j) { 
-                return data[i * cols + j]; 
+            double& operator()(size_t i, size_t j) {
+                return data[i * cols + j];
             }
-            const double& operator()(size_t i, size_t j) const { 
+            const double& operator()(size_t i, size_t j) const {
                 return data[i * cols + j];
             }
 
             // ------------------------------------------- Matrix Arithmetic -------------------------------------------
-            
+
             // Matrix addition and subtraction
             friend Matrix operator+(Matrix a, const Matrix& b) {
                 if (a.rows != b.rows || a.cols != b.cols) throw std::invalid_argument("Size mismatch");
