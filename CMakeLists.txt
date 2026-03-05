@@ -6,4 +6,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-add_executable(main main.cpp)
+include_directories(include)
+
+add_executable(main src/main.cpp)
