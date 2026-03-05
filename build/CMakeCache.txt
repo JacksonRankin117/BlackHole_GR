@@ -224,6 +224,45 @@ CMAKE_TAPI:FILEPATH=CMAKE_TAPI-NOTFOUND
 // Studio IDE projects all commands are done without /nologo.
 CMAKE_VERBOSE_MAKEFILE:BOOL=FALSE
 
+//The directory containing a CMake configuration file for Imath.
+Imath_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Imath
+
+//The directory containing a CMake configuration file for OpenEXR.
+OpenEXR_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/OpenEXR
+
+//Arguments to supply to pkg-config
+PKG_CONFIG_ARGN:STRING=
+
+//pkg-config executable
+PKG_CONFIG_EXECUTABLE:FILEPATH=/usr/bin/pkg-config
+
+//Path to a file.
+ZLIB_INCLUDE_DIR:PATH=/usr/include
+
+//Path to a library.
+ZLIB_LIBRARY_DEBUG:FILEPATH=ZLIB_LIBRARY_DEBUG-NOTFOUND
+
+//Path to a library.
+ZLIB_LIBRARY_RELEASE:FILEPATH=/usr/lib/x86_64-linux-gnu/libz.so
+
+//Path to a library.
+pkgcfg_lib_OPENEXR_Iex-3_1:FILEPATH=/usr/lib/x86_64-linux-gnu/libIex-3_1.so
+
+//Path to a library.
+pkgcfg_lib_OPENEXR_IlmThread-3_1:FILEPATH=/usr/lib/x86_64-linux-gnu/libIlmThread-3_1.so
+
+//Path to a library.
+pkgcfg_lib_OPENEXR_Imath-3_1:FILEPATH=/usr/lib/x86_64-linux-gnu/libImath-3_1.so
+
+//Path to a library.
+pkgcfg_lib_OPENEXR_OpenEXR-3_1:FILEPATH=/usr/lib/x86_64-linux-gnu/libOpenEXR-3_1.so
+
+//Path to a library.
+pkgcfg_lib_OPENEXR_OpenEXRCore-3_1:FILEPATH=/usr/lib/x86_64-linux-gnu/libOpenEXRCore-3_1.so
+
+//Path to a library.
+pkgcfg_lib_OPENEXR_OpenEXRUtil-3_1:FILEPATH=/usr/lib/x86_64-linux-gnu/libOpenEXRUtil-3_1.so
+
 
 ########################
 # INTERNAL cache entries
@@ -305,6 +344,8 @@ CMAKE_GENERATOR_INSTANCE:INTERNAL=
 CMAKE_GENERATOR_PLATFORM:INTERNAL=
 //Name of generator toolset.
 CMAKE_GENERATOR_TOOLSET:INTERNAL=
+//Test CMAKE_HAVE_LIBC_PTHREAD
+CMAKE_HAVE_LIBC_PTHREAD:INTERNAL=1
 //Source directory with the top level CMakeLists.txt file for this
 // project
 CMAKE_HOME_DIRECTORY:INTERNAL=/home/jackson-rankin/Developer/BlackHole_GR
@@ -372,6 +413,72 @@ CMAKE_TAPI-ADVANCED:INTERNAL=1
 CMAKE_UNAME:INTERNAL=/usr/bin/uname
 //ADVANCED property for variable: CMAKE_VERBOSE_MAKEFILE
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
+//Details about finding PkgConfig
+FIND_PACKAGE_MESSAGE_DETAILS_PkgConfig:INTERNAL=[/usr/bin/pkg-config][v1.8.1()]
+//Details about finding Threads
+FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
+//Details about finding ZLIB
+FIND_PACKAGE_MESSAGE_DETAILS_ZLIB:INTERNAL=[/usr/lib/x86_64-linux-gnu/libz.so][/usr/include][c ][v1.3()]
+OPENEXR_CFLAGS:INTERNAL=-I/usr/include;-I/usr/include/OpenEXR;-pthread;-I/usr/include/Imath
+OPENEXR_CFLAGS_I:INTERNAL=
+OPENEXR_CFLAGS_OTHER:INTERNAL=-pthread
+OPENEXR_FOUND:INTERNAL=1
+OPENEXR_INCLUDEDIR:INTERNAL=/usr/include
+OPENEXR_INCLUDE_DIRS:INTERNAL=/usr/include;/usr/include/OpenEXR;/usr/include/Imath
+OPENEXR_LDFLAGS:INTERNAL=-L/usr/lib/x86_64-linux-gnu;-lOpenEXR-3_1;-lOpenEXRUtil-3_1;-lOpenEXRCore-3_1;-lIex-3_1;-lIlmThread-3_1;-lImath-3_1
+OPENEXR_LDFLAGS_OTHER:INTERNAL=
+OPENEXR_LIBDIR:INTERNAL=/usr/lib/x86_64-linux-gnu
+OPENEXR_LIBRARIES:INTERNAL=OpenEXR-3_1;OpenEXRUtil-3_1;OpenEXRCore-3_1;Iex-3_1;IlmThread-3_1;Imath-3_1
+OPENEXR_LIBRARY_DIRS:INTERNAL=/usr/lib/x86_64-linux-gnu
+OPENEXR_LIBS:INTERNAL=
+OPENEXR_LIBS_L:INTERNAL=
+OPENEXR_LIBS_OTHER:INTERNAL=
+OPENEXR_LIBS_PATHS:INTERNAL=
+OPENEXR_MODULE_NAME:INTERNAL=OpenEXR
+OPENEXR_OpenEXR_INCLUDEDIR:INTERNAL=
+OPENEXR_OpenEXR_LIBDIR:INTERNAL=
+OPENEXR_OpenEXR_PREFIX:INTERNAL=
+OPENEXR_OpenEXR_VERSION:INTERNAL=
+OPENEXR_PREFIX:INTERNAL=/usr
+OPENEXR_STATIC_CFLAGS:INTERNAL=-I/usr/include;-I/usr/include/OpenEXR;-pthread;-I/usr/include/Imath
+OPENEXR_STATIC_CFLAGS_I:INTERNAL=
+OPENEXR_STATIC_CFLAGS_OTHER:INTERNAL=-pthread
+OPENEXR_STATIC_INCLUDE_DIRS:INTERNAL=/usr/include;/usr/include/OpenEXR;/usr/include/Imath
+OPENEXR_STATIC_LDFLAGS:INTERNAL=-L/usr/lib/x86_64-linux-gnu;-lOpenEXR-3_1;-lOpenEXRUtil-3_1;-lOpenEXRCore-3_1;-lIex-3_1;-lIlmThread-3_1;-lz;-lImath-3_1
+OPENEXR_STATIC_LDFLAGS_OTHER:INTERNAL=
+OPENEXR_STATIC_LIBDIR:INTERNAL=
+OPENEXR_STATIC_LIBRARIES:INTERNAL=OpenEXR-3_1;OpenEXRUtil-3_1;OpenEXRCore-3_1;Iex-3_1;IlmThread-3_1;z;Imath-3_1
+OPENEXR_STATIC_LIBRARY_DIRS:INTERNAL=/usr/lib/x86_64-linux-gnu
+OPENEXR_STATIC_LIBS:INTERNAL=
+OPENEXR_STATIC_LIBS_L:INTERNAL=
+OPENEXR_STATIC_LIBS_OTHER:INTERNAL=
+OPENEXR_STATIC_LIBS_PATHS:INTERNAL=
+OPENEXR_VERSION:INTERNAL=3.1.5
+//ADVANCED property for variable: PKG_CONFIG_ARGN
+PKG_CONFIG_ARGN-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: PKG_CONFIG_EXECUTABLE
+PKG_CONFIG_EXECUTABLE-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ZLIB_INCLUDE_DIR
+ZLIB_INCLUDE_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ZLIB_LIBRARY_DEBUG
+ZLIB_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: ZLIB_LIBRARY_RELEASE
+ZLIB_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
 //linker supports push/pop state
 _CMAKE_LINKER_PUSHPOP_STATE_SUPPORTED:INTERNAL=TRUE
+__pkg_config_arguments_OPENEXR:INTERNAL=REQUIRED;OpenEXR
+__pkg_config_checked_OPENEXR:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_OPENEXR_Iex-3_1
+pkgcfg_lib_OPENEXR_Iex-3_1-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_OPENEXR_IlmThread-3_1
+pkgcfg_lib_OPENEXR_IlmThread-3_1-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_OPENEXR_Imath-3_1
+pkgcfg_lib_OPENEXR_Imath-3_1-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_OPENEXR_OpenEXR-3_1
+pkgcfg_lib_OPENEXR_OpenEXR-3_1-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_OPENEXR_OpenEXRCore-3_1
+pkgcfg_lib_OPENEXR_OpenEXRCore-3_1-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: pkgcfg_lib_OPENEXR_OpenEXRUtil-3_1
+pkgcfg_lib_OPENEXR_OpenEXRUtil-3_1-ADVANCED:INTERNAL=1
+prefix_result:INTERNAL=/usr/lib/x86_64-linux-gnu
 

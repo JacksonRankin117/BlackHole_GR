@@ -5,6 +5,7 @@
 #include "ray.h"
 #include "sphere.h"
 #include "math.h"
+#include "starmap.h"
 
 using namespace Math;
 
@@ -19,19 +20,21 @@ int main(int argc, char* argv[])
 
     // ---------------------------------------------------- Camera -----------------------------------------------------
     Camera cam(
-        width, height,         // resolution of the image
-        45.0,                  // field of view in degrees
-        {-200.0, 0.0, 40.0},   // camera position
-        {0.0, 0.0, 0.0},       // look at origin
-        {0.0, 0.0, 1.0}        // up direction
+        width, height,          // resolution of the image
+        75.0,                  // field of view in degrees
+        {150.0, 150.0, 800.0},  // camera position
+        {0.0, 0.0, 0.0},        // look at origin
+        {0.0, 0.0, 1.0}         // up direction
     );
 
-    // ---------------------------------------------------- Sphere -----------------------------------------------------
+    // ---------------------------------------------------- Scene -----------------------------------------------------
     Sphere sphere(
         Vec4{0.0, 0.0, 0.0, 0.0},  // spacetime center
         30.0,                      // radius
         nullptr                    // ignore material
     );
+
+    StarMap star_map("StarMaps/starmap_2020_8k.exr");
 
     // ---------------------------------------------------- Render -----------------------------------------------------
     double last_progress = -1.0;
@@ -69,12 +72,15 @@ int main(int argc, char* argv[])
             }
             else
             {
-                // Sky gradient
-                Vec3 unit_dir = (Vec3{ ray.r_direct.X, ray.r_direct.Y, ray.r_direct.Z}).Normalize();
+                // Sample from star map
+                Vec3 dir = Vec3{ ray.r_direct.X, ray.r_direct.Y, ray.r_direct.Z }.Normalized();
+                pixel = star_map.Sample(dir);
 
-                float t = 0.5f * (unit_dir.Z + 1.0f);
-
-                pixel = (1.0f - t) * Color{1.0f, 1.0f, 1.0f} + t * Color{0.5f, 0.7f, 1.0f};
+                // simple HDR tone map
+                float exposure = 5.0f;
+                pixel.r = 1.0f - std::exp(-exposure * pixel.r);
+                pixel.g = 1.0f - std::exp(-exposure * pixel.g);
+                pixel.b = 1.0f - std::exp(-exposure * pixel.b);
             }
 
             image.push_back(pixel);

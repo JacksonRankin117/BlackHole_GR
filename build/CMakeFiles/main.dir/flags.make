@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/jackson-rankin/Developer/BlackHole_GR/include
+CXX_INCLUDES = -I/home/jackson-rankin/Developer/BlackHole_GR/include -I/usr/include/OpenEXR -I/usr/include/Imath
 
 CXX_FLAGS = -std=gnu++23
 

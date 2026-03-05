@@ -1,1 +1,1 @@
-/usr/bin/c++ CMakeFiles/main.dir/src/main.cpp.o -o /home/jackson-rankin/Developer/BlackHole_GR/main 
+/usr/bin/c++ CMakeFiles/main.dir/src/main.cpp.o -o main  -lOpenEXR-3_1 -lOpenEXRUtil-3_1 -lOpenEXRCore-3_1 -lIex-3_1 -lIlmThread-3_1 -lImath-3_1 -lpthread -lz 

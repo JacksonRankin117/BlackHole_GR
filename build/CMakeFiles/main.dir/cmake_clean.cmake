@@ -1,8 +1,8 @@
 file(REMOVE_RECURSE
-  "/home/jackson-rankin/Developer/BlackHole_GR/main"
-  "/home/jackson-rankin/Developer/BlackHole_GR/main.pdb"
   "CMakeFiles/main.dir/src/main.cpp.o"
   "CMakeFiles/main.dir/src/main.cpp.o.d"
+  "main"
+  "main.pdb"
 )
 
 # Per-language clean rules from dependency scanning.
