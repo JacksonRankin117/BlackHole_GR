@@ -19,20 +19,20 @@ public:
         file.readPixels(file.dataWindow().min.y, file.dataWindow().max.y);
     }
 
-    Color Sample(const Math::Vec3& dir) const {
-        // Convert 3D direction to spherical coordinates
-        double theta = std::acos(dir.Y);              // 0..pi
-        double phi   = std::atan2(dir.Z, dir.X);      // -pi..pi
-        if (phi < 0) phi += 2*M_PI;                  // 0..2pi
+    Color Sample(const Math::Vec3& dir) const
+    {
+        double theta = std::acos(dir.Z);        // vertical (declination)
+        double phi   = std::atan2(dir.Y, dir.X); // horizontal (RA)
 
-        // Map to pixel coordinates
-        double u = phi / (2*M_PI);
-        double v = theta / M_PI;
+        if (phi < 0) phi += 2*M_PI;
+
+        double u = 1.0 - phi / (2*M_PI); // RA increases left
+        double v = 1.0 - theta / M_PI;
 
         int x = std::min(int(u * width), width - 1);
         int y = std::min(int(v * height), height - 1);
 
         const Imf::Rgba& px = pixels[y][x];
-        return Color(px.r, px.g, px.b); // Assuming px values are 0..1
+        return Color(px.r, px.g, px.b);
     }
 };

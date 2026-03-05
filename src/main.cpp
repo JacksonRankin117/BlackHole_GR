@@ -12,29 +12,29 @@ using namespace Math;
 int main(int argc, char* argv[])
 {
     // ------------------------------------------------ Image Settings -------------------------------------------------
-    const int width  = 1920;
-    const int height = 1080;
+    const int width  = 4*1920;
+    const int height = 4*1080;
 
     std::vector<Color> image;
     image.reserve(width * height);
 
     // ---------------------------------------------------- Camera -----------------------------------------------------
     Camera cam(
-        width, height,          // resolution of the image
-        75.0,                  // field of view in degrees
-        {150.0, 150.0, 800.0},  // camera position
-        {0.0, 0.0, 0.0},        // look at origin
-        {0.0, 0.0, 1.0}         // up direction
+        width, height,           // resolution of the image
+        10.0,                    // field of view in degrees
+        {0.056, 0.340, -0.939},  // camera position
+        {0.0, 0.0, 0.0},         // look at origin
+        {0.0, 0.0, 1.0}          // up direction
     );
 
-    // ---------------------------------------------------- Scene -----------------------------------------------------
-    Sphere sphere(
+    // ----------------------------------------------------- Scene -----------------------------------------------------
+    /*Sphere sphere(
         Vec4{0.0, 0.0, 0.0, 0.0},  // spacetime center
         30.0,                      // radius
         nullptr                    // ignore material
-    );
+    );*/
 
-    StarMap star_map("StarMaps/starmap_2020_8k.exr");
+    StarMap star_map("StarMaps/starmap_2020_64k.exr");
 
     // ---------------------------------------------------- Render -----------------------------------------------------
     double last_progress = -1.0;
@@ -59,6 +59,7 @@ int main(int argc, char* argv[])
             HitRecord rec;
 
             //---------------------------------------------- Pixel logic -----------------------------------------------
+            /*
             if (sphere.Intersect(ray, 0.001, 1e30, rec))
             {
                 Vec3 normal = rec.normal;
@@ -82,7 +83,16 @@ int main(int argc, char* argv[])
                 pixel.g = 1.0f - std::exp(-exposure * pixel.g);
                 pixel.b = 1.0f - std::exp(-exposure * pixel.b);
             }
+            */
+            // Sample from star map
+            Vec3 dir = Vec3{ ray.r_direct.X, ray.r_direct.Y, ray.r_direct.Z }.Normalized();
+            pixel = star_map.Sample(dir);
 
+            // simple HDR tone map
+            float exposure = 60.0f;
+            pixel.r = 1.0f - std::exp(-exposure * pixel.r);
+            pixel.g = 1.0f - std::exp(-exposure * pixel.g);
+            pixel.b = 1.0f - std::exp(-exposure * pixel.b);
             image.push_back(pixel);
         }
     }
@@ -93,7 +103,7 @@ int main(int argc, char* argv[])
     Color::SaveImage("image.pfm", width, height, image);
 
     //--------------------------------------------------- Debugging ----------------------------------------------------
-    cam.DebugProject({0, 30, 60});
+    //cam.DebugProject({0, 30, 60});
 
     return 0;
 }

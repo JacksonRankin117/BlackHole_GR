@@ -15,6 +15,7 @@ class Camera {
         {
             // Build camera basis from target and up hint
             BuildBasis(target, up_hint);
+            up_hint = up_hint.Normalized();
         }
         //-------------------------------- Generate a ray for a given pixel coordinate ---------------------------------
         Ray GenerateRay(int px, int py) const
