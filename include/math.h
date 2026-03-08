@@ -22,7 +22,6 @@
 #include <cassert>
 #include <cmath>
 #include <iomanip>
-#include <numbers>
 #include <ostream>
 #include <stdexcept>
 #include <tuple>
@@ -302,6 +301,11 @@ namespace Math {
 
         static constexpr double epsilon = 1e-12;
 
+        [[nodiscard]] constexpr double Magnitude() const noexcept {
+            /// Returns the magnitude of the vector.
+            return std::sqrt(X*X + Y*Y + Z*Z);
+        }
+
         // ----------------------------------------------- Constructors ------------------------------------------------
 
         constexpr Vec4() noexcept
@@ -416,10 +420,21 @@ namespace Math {
 
             // --------------------------------------------- Constructors ----------------------------------------------
 
+            // Default, 1x1, initializing each index with 0.0
             Matrix() : rows(1), cols(1), data(1, 0.0) {}
 
+            // NxN, initializing each index with a value of 0.0
             Matrix(size_t r, size_t c, double init = 0.0)
                 : rows(r), cols(c), data(r * c, init) {}
+
+
+            // 4x4 constructor, initialized with custom values at each index
+            Matrix(std::initializer_list<double> vals)
+            {
+                rows = 4;
+                cols = 4;
+                data = std::vector<double>(vals);
+            }
 
             // ------------------------------------------- Matrix Properties -------------------------------------------
 
@@ -466,9 +481,12 @@ namespace Math {
             size_t numCols() const { return cols; }
 
             // 2D Accessors mapping to 1D index
-            double& operator()(size_t i, size_t j) {
+            double& operator()(size_t i, size_t j)
+            {
+                assert(i < rows && j < cols);
                 return data[i * cols + j];
             }
+
             const double& operator()(size_t i, size_t j) const {
                 return data[i * cols + j];
             }
@@ -514,6 +532,22 @@ namespace Math {
                     M(2,0)*v.T + M(2,1)*v.X + M(2,2)*v.Y + M(2,3)*v.Z,
                     M(3,0)*v.T + M(3,1)*v.X + M(3,2)*v.Y + M(3,3)*v.Z
                 );
+            }
+
+            // Matrix * Matrix
+            friend Matrix operator*(const Matrix& A, const Matrix& B)
+            {
+                if (A.cols != B.rows)
+                    throw std::invalid_argument("Matrix multiply size mismatch");
+
+                Matrix result(A.rows, B.cols, 0.0);
+
+                for (size_t i = 0; i < A.rows; ++i)
+                    for (size_t j = 0; j < B.cols; ++j)
+                        for (size_t k = 0; k < A.cols; ++k)
+                            result(i,j) += A(i,k) * B(k,j);
+
+                return result;
             }
     };
 

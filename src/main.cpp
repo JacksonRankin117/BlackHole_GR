@@ -1,109 +1,58 @@
 #include <iostream>
-
+#include <vector>
 #include "camera.h"
 #include "color.h"
-#include "ray.h"
-#include "sphere.h"
-#include "math.h"
 #include "starmap.h"
+#include "math.h"
+#include "blackhole.h"
 
-using namespace Math;
-
-int main(int argc, char* argv[])
+int main()
 {
-    // ------------------------------------------------ Image Settings -------------------------------------------------
-    const int width  = 4*1920;
-    const int height = 4*1080;
+    // --------------------- Image Settings ---------------------
+    const int width  = 1920;   // small for quick test
+    const int height = 1080;
 
     std::vector<Color> image;
     image.reserve(width * height);
 
-    // ---------------------------------------------------- Camera -----------------------------------------------------
-    Camera cam(
-        width, height,           // resolution of the image
-        10.0,                    // field of view in degrees
-        {0.056, 0.340, -0.939},  // camera position
-        {0.0, 0.0, 0.0},         // look at origin
-        {0.0, 0.0, 1.0}          // up direction
-    );
+    // ---------------------- Camera ----------------------------
+    Math::Vec3 camPos  = {0.0, BlackHole::AU, 0};
+    Math::Vec3 target  = {0.0, 0.0, 0.0};
+    Math::Vec3 upVec   = {0.0, 0.0, 1.0};
+    Camera cam(width, height, 45.0, camPos, target, upVec);
 
-    // ----------------------------------------------------- Scene -----------------------------------------------------
-    /*Sphere sphere(
-        Vec4{0.0, 0.0, 0.0, 0.0},  // spacetime center
-        30.0,                      // radius
-        nullptr                    // ignore material
-    );*/
+    // ---------------------- Star Map --------------------------
+    StarMap star_map("StarMaps/starmap_2020_16k.exr");
+    BlackHole::Schwarzschild dummySpacetime(1.0, {0, 0, 0}); // mass = 1.0
 
-    StarMap star_map("StarMaps/starmap_2020_64k.exr");
 
-    // ---------------------------------------------------- Render -----------------------------------------------------
-    double last_progress = -1.0;
-
-    for (int i = 0; i < height; i++)
+    // ---------------------- Render ----------------------------
+    for(int i = 0; i < height; ++i)
     {
-        // Progress bar
-        double progress = std::round(1000.0 * i / height) / 10.0;
-        if (progress != last_progress)
+        double progress = 100.0 * i / height;
+        std::cout << "\rProgress: " << progress << "%" << std::flush;
+
+        for(int j = 0; j < width; ++j)
         {
-            std::cout << "\rProgress: " << progress << "%" << std::flush;
-            last_progress = progress;
-        }
+            Ray r = cam.GenerateRay(j, i);
+            Math::Vec3 dir = r.direction;
 
-        for (int j = 0; j < width; j++)
-        {
-            Ray ray = cam.GenerateRay(j, i);
+            Color pixel = star_map.Sample(dir);
 
-            double lambda;
-            Color pixel;
-
-            HitRecord rec;
-
-            //---------------------------------------------- Pixel logic -----------------------------------------------
-            /*
-            if (sphere.Intersect(ray, 0.001, 1e30, rec))
-            {
-                Vec3 normal = rec.normal;
-
-                pixel = {
-                    0.5f * ((float)normal.X + 1.0f),
-                    0.5f * ((float)normal.Y + 1.0f),
-                    0.5f * ((float)normal.Z + 1.0f)
-                };
-
-            }
-            else
-            {
-                // Sample from star map
-                Vec3 dir = Vec3{ ray.r_direct.X, ray.r_direct.Y, ray.r_direct.Z }.Normalized();
-                pixel = star_map.Sample(dir);
-
-                // simple HDR tone map
-                float exposure = 5.0f;
-                pixel.r = 1.0f - std::exp(-exposure * pixel.r);
-                pixel.g = 1.0f - std::exp(-exposure * pixel.g);
-                pixel.b = 1.0f - std::exp(-exposure * pixel.b);
-            }
-            */
-            // Sample from star map
-            Vec3 dir = Vec3{ ray.r_direct.X, ray.r_direct.Y, ray.r_direct.Z }.Normalized();
-            pixel = star_map.Sample(dir);
-
-            // simple HDR tone map
-            float exposure = 60.0f;
+            // Tone mapping
+            float exposure = 20.0f;
             pixel.r = 1.0f - std::exp(-exposure * pixel.r);
             pixel.g = 1.0f - std::exp(-exposure * pixel.g);
             pixel.b = 1.0f - std::exp(-exposure * pixel.b);
+
             image.push_back(pixel);
         }
     }
-
+    std::cout << "\rProgress: 100.0%" << std::endl;
     std::cout << "\rProgress: 100.0%" << std::endl;
 
-    //--------------------------------------------------- Save Image ---------------------------------------------------
-    Color::SaveImage("image.pfm", width, height, image);
-
-    //--------------------------------------------------- Debugging ----------------------------------------------------
-    //cam.DebugProject({0, 30, 60});
+    // ---------------------- Save ------------------------------
+    Color::SaveImage("imge.pfm", width, height, image);
 
     return 0;
 }

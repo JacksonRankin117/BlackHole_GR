@@ -3,14 +3,11 @@
 
 CMakeFiles/main.dir/src/main.cpp.o
  /home/jackson-rankin/Developer/BlackHole_GR/src/main.cpp
+ /home/jackson-rankin/Developer/BlackHole_GR/include/blackhole.h
  /home/jackson-rankin/Developer/BlackHole_GR/include/camera.h
  /home/jackson-rankin/Developer/BlackHole_GR/include/color.h
- /home/jackson-rankin/Developer/BlackHole_GR/include/hittable.h
- /home/jackson-rankin/Developer/BlackHole_GR/include/material.h
  /home/jackson-rankin/Developer/BlackHole_GR/include/math.h
- /home/jackson-rankin/Developer/BlackHole_GR/include/physics.h
  /home/jackson-rankin/Developer/BlackHole_GR/include/ray.h
- /home/jackson-rankin/Developer/BlackHole_GR/include/sphere.h
  /home/jackson-rankin/Developer/BlackHole_GR/include/starmap.h
  /usr/include/Imath/ImathBox.h
  /usr/include/Imath/ImathConfig.h

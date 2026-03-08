@@ -1,27 +1,12 @@
 #pragma once
 
-#include "color.h"
 #include "math.h"
-#include "physics.h"
-
+// ---------------------------------- Ray ----------------------------------
 class Ray {
-    public:
-        //
-        Math::Vec4 r_origin;
-        Math::Vec4 r_direct;
-        Color r_color;
+public:
+    Math::Vec3 origin;
+    Math::Vec3 direction; // normalized
 
-        //-------------------------------------------- Default Constructor ---------------------------------------------
-        Ray(const Math::Vec4& origin, const Math::Vec4& direction) noexcept : r_origin(origin), r_direct(direction) {}
-
-        //----------------------------------------------- March the ray ------------------------------------------------
-        [[nodiscard]] constexpr Math::Vec4 at(double lambda) const noexcept {
-            return r_origin + lambda * r_direct;
-        }
-
-        //----------------------------------------------- Set Color --------------------------------------------------
-        void SetColor(float r, float g, float b) {
-            r_color = {r, g, b};
-        }
-
+    Ray(const Math::Vec3& o, const Math::Vec3& d)
+        : origin(o), direction(d.Normalized()) {}
 };
