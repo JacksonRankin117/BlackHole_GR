@@ -1,20 +1,21 @@
 cmake_minimum_required(VERSION 3.16)
+
 project(BlackHole_GR)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Include your headers
+# Find OpenEXR
+find_package(OpenEXR REQUIRED)
+
+# Include local headers
 include_directories(include)
 
-# Find OpenEXR via pkg-config
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(OPENEXR REQUIRED OpenEXR)
+# Collect all source files
+file(GLOB SRC_FILES src/*.cpp)
 
-include_directories(${OPENEXR_INCLUDE_DIRS} /usr/include/Imath)
+# Create executable
+add_executable(blackhole ${SRC_FILES})
 
-# Executable
-add_executable(main src/main.cpp)
-
-# Link OpenEXR libraries + pthread + zlib
-target_link_libraries(main ${OPENEXR_LIBRARIES} pthread z)
+# Link OpenEXR
+target_link_libraries(blackhole OpenEXR::OpenEXR)

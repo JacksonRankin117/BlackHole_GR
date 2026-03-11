@@ -1,8 +1,8 @@
 [
 {
   "directory": "/home/jackson-rankin/Developer/BlackHole_GR/build",
-  "command": "/usr/bin/c++  -I/home/jackson-rankin/Developer/BlackHole_GR/include -I/usr/include/OpenEXR -I/usr/include/Imath -std=gnu++23 -o CMakeFiles/main.dir/src/main.cpp.o -c /home/jackson-rankin/Developer/BlackHole_GR/src/main.cpp",
+  "command": "/usr/bin/c++  -I/home/jackson-rankin/Developer/BlackHole_GR/include -isystem /usr/include/OpenEXR -isystem /usr/include/Imath -std=gnu++17 -o CMakeFiles/blackhole.dir/src/main.cpp.o -c /home/jackson-rankin/Developer/BlackHole_GR/src/main.cpp",
   "file": "/home/jackson-rankin/Developer/BlackHole_GR/src/main.cpp",
-  "output": "CMakeFiles/main.dir/src/main.cpp.o"
+  "output": "CMakeFiles/blackhole.dir/src/main.cpp.o"
 }
 ]
