@@ -50,6 +50,38 @@ namespace BlackHole {
 
             virtual double EventHorizon() const = 0;
     };
+    // --------------------------------------------------- Minkowski ---------------------------------------------------
+    class Minkowski : public Spacetime {  // Flat spacetime
+    public:
+
+        Parameters params;
+
+        // Position irrelevant, mass = 0
+        Minkowski(Vec3 pos = {0,0,0})
+            : params{0.0, 0.0, pos} {}
+
+        // No horizon
+        double EventHorizon() const override { return 0.0; }
+
+        // Metric tensor η_{μν}
+        Matrix Metric(double, double) const override
+        {
+            Matrix g{4,4};
+
+            g(0,0) = -c * c;
+            g(1,1) = 1.0;
+            g(2,2) = 1.0;
+            g(3,3) = 1.0;
+
+            return g;
+        }
+
+        // All Christoffels vanish
+        Christoffel ChristoffelSymbols(double, double) const override
+        {
+            return Christoffel{}; // Initialize as a zero-tensor
+        }
+    };
 
     // ------------------------------------------------- Schwarzschild -------------------------------------------------
 
@@ -59,10 +91,10 @@ namespace BlackHole {
         Parameters params;
 
         // Constructor
-        Schwarzschild(double M, Vec3 pos)  : params{M, 0.0, pos}
+        Schwarzschild(double M, Vec3 pos) : params{M, 0.0, pos}
         {
-            r_S = 2.0 * G * M / (c * c);
-            r_ISCO = 3.0 * r_S;
+            r_S = 2.0 * G * M / (c * c);  // Schwarzschild radius
+            r_ISCO = 3.0 * r_S;           // Innermost stable circular orbit
         }
 
         // Return the event horizon and the Innermost Stable Circular Orbit
@@ -76,6 +108,7 @@ namespace BlackHole {
 
             double f = 1.0 - r_S / r;
 
+            // Set the metric components
             g(0,0) = -f * c * c;
             g(1,1) = 1.0 / f;
             g(2,2) = r * r;

@@ -7,7 +7,7 @@
 struct Color {
     float r, g, b;
 
-    // ---------------- Constructors ----------------
+    // ------------------------------------------------- Constructors --------------------------------------------------
     constexpr Color() noexcept : r(0), g(0), b(0) {}
     constexpr Color(float r_, float g_, float b_) noexcept
         : r(r_), g(g_), b(b_) {}
@@ -32,7 +32,7 @@ struct Color {
         std::cout << "\nPFM file saved to " << filename << std::endl;
     }
 
-    // ---------------- Addition ----------------
+    // ------------------------------------------------ Color Addition -------------------------------------------------
     constexpr Color operator+(const Color& other) const noexcept {
         return { r + other.r,
                  g + other.g,
@@ -46,14 +46,14 @@ struct Color {
         return *this;
     }
 
-    // ---------------- Component-wise Multiply ----------------
+    // -------------------------------------------- Component-wise Multiply --------------------------------------------
     constexpr Color operator*(const Color& other) const noexcept {
         return { r * other.r,
                  g * other.g,
                  b * other.b };
     }
 
-    // ---------------- Scalar Multiply ----------------
+    // ------------------------------------------------ Scalar Multiply ------------------------------------------------
     constexpr Color operator*(float s) const noexcept {
         return { r * s,
                  g * s,
@@ -70,7 +70,7 @@ struct Color {
         return c * s;
     }
 
-    // ---------------- Clamp ----------------
+    // ----------------------------------------------------- Clamp -----------------------------------------------------
     constexpr float Clamp(float x, float min_val, float max_val) noexcept
     {
         return (x < min_val) ? min_val : ((x > max_val) ? max_val : x);
@@ -82,5 +82,5 @@ struct Color {
         b = Clamp(b, min_val, max_val);
     }
 
-    static Color FromBlackbody(double T);
+    static Color FromBlackbody(double T);  // Edit later to grab a color based on temperature
 };

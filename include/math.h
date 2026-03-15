@@ -307,15 +307,19 @@ namespace Math {
         }
 
         // ----------------------------------------------- Constructors ------------------------------------------------
-
-        constexpr Vec4() noexcept
-            : T(0.0), X(0.0), Y(0.0), Z(0.0) {}
+        // 4D zero-vector
+        constexpr Vec4() noexcept : T(0.0), X(0.0), Y(0.0), Z(0.0) {}
 
         constexpr Vec4(double t, double x, double y, double z) noexcept
             : T(t), X(x), Y(y), Z(z) {}
 
+        [[nodiscard]] constexpr Vec4 Normalized() const noexcept {
+            /// This method will return a new Vec3 object, as opposed to changing the current one
+            double m = Magnitude();
+            if (m < epsilon) return {0, 0, 0, 0};  // Avoid floating point errors by returning the zero vector
+            return {T / m, X / m, Y / m, Z / m};
+        }
         // ------------------------------------------------- Indexing --------------------------------------------------
-
         constexpr double& operator[](size_t i) noexcept
         {
             assert(i < 4);
@@ -329,12 +333,10 @@ namespace Math {
         }
 
         // ------------------------------------------------- Unary ops -------------------------------------------------
-
         constexpr Vec4 operator-() const noexcept
         {
             return {-T, -X, -Y, -Z};
         }
-
         // ------------------------------------------------ Arithmetic -------------------------------------------------
 
         friend constexpr Vec4 operator+(const Vec4& a, const Vec4& b) noexcept

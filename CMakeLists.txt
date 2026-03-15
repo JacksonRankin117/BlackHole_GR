@@ -17,5 +17,5 @@ file(GLOB SRC_FILES src/*.cpp)
 # Create executable
 add_executable(blackhole ${SRC_FILES})
 
-# Link OpenEXR
-target_link_libraries(blackhole OpenEXR::OpenEXR)
+# Link OpenEXR and pthread for threading
+target_link_libraries(blackhole OpenEXR::OpenEXR pthread)
