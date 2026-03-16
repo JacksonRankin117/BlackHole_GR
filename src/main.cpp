@@ -12,8 +12,8 @@
 int main()
 {
     // ------------------------------------------------ Image Settings -------------------------------------------------
-    constexpr int width  = 800;  // Image width
-    constexpr int height = 600;  // Image height
+    constexpr int width  = 200;  // Image width
+    constexpr int height = 100;  // Image height
 
     std::vector<Color> image;       // Image data initialization
     image.resize(width * height);   // Pre-allocate memory for the image
@@ -33,7 +33,7 @@ int main()
 
     // --------------------------------------------------- Star Map ----------------------------------------------------
     StarMap star_map("StarMaps/starmap_2020_16k.exr");
-    BlackHole::Schwarzschild dummySpacetime(1.0e6 * BlackHole::M_Solar, {0, 0, 0}); // mass = 1 million Solar masses
+    BlackHole::Schwarzschild Schwarzschild(1.0e6 * BlackHole::M_Solar, {0, 0, 0}); // mass = 1 million Solar masses
 
     // ---------------------------------------------------- Render -----------------------------------------------------
     for(int i = 0; i < height; ++i)
@@ -44,16 +44,30 @@ int main()
 
         for(int j = 0; j < width; ++j)
         {
-            GeodesicState init = PhotonFromCamera(cam, j, i, dummySpacetime);
-            GeodesicState final = TracePhotonAdaptive(init, dummySpacetime);
+            GeodesicState init = PhotonFromCamera(cam, j, i, Schwarzschild);
+            TraceResult result = TracePhotonAdaptive(init, Schwarzschild);
 
-            Color pixel = SamplePhoton(final, star_map);
+            Color pixel;
 
-            // Simple exposure
-            float exposure = 20.0f;
+            if (result.captured)
+            {
+                pixel = {0.0f, 0.0f, 0.0f};
+            }
+            else
+            {
+                pixel = SamplePhoton(result.state, star_map);
+            }
+
+            // Linear tone map
+            float exposure = 10.0f;
             pixel.r = 1.0f - std::exp(-exposure * pixel.r);
             pixel.g = 1.0f - std::exp(-exposure * pixel.g);
             pixel.b = 1.0f - std::exp(-exposure * pixel.b);
+
+            // Gamma-correction
+            pixel.r = std::pow(pixel.r, 1.0f / 2.2f);
+            pixel.g = std::pow(pixel.g, 1.0f / 2.2f);
+            pixel.b = std::pow(pixel.b, 1.0f / 2.2f);
 
             image[i*width + j] = pixel;
         }

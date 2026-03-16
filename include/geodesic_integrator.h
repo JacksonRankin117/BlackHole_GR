@@ -6,6 +6,7 @@
 #include "starmap.h"
 #include "color.h"
 
+
 // ------------------------------------- Stores the state of a geodesic trajectory -------------------------------------
 struct GeodesicState {
     Math::Vec4 x;
@@ -37,6 +38,12 @@ struct GeodesicState {
         }
         return out;
     }
+};
+
+// -------------------------------------------- Results of the Ray Tracing ---------------------------------------------
+struct TraceResult {
+    GeodesicState state;
+    bool captured;
 };
 
 // ----------------------------------- Computes the derivatives of a geodesic state ------------------------------------
@@ -94,37 +101,53 @@ inline GeodesicState TracePhoton(const GeodesicState& init,             // Initi
 }
 
 // ------------------------------------------ Adaptive step size integration -------------------------------------------
-inline GeodesicState TracePhotonAdaptive(const GeodesicState& init,
-                                         const BlackHole::Spacetime& spacetime,
-                                         double dl_max = 1.0e7,
-                                         int max_steps = 20000)
+inline TraceResult TracePhotonAdaptive(const GeodesicState& init,
+                                       const BlackHole::Spacetime& spacetime,
+                                       double dl_max = 1.0e7,
+                                       int max_steps = 20000)
 {
     GeodesicState state = init;
+    double r_s = spacetime.EventHorizon();
 
     for(int step = 0; step < max_steps; ++step)
     {
         double r = state.x[1];
 
-        // Stop conditions
-        if(r > 1000.0 * BlackHole::AU) break;          // photon escaped
-        if(r < spacetime.EventHorizon()) break;        // photon fell in
+        //  Capture test (with safety margin)
+        if (r < 1.0001 * r_s)
+            return {state, true};
 
-        // Adaptive step size: smaller near horizon, larger far away
+        //  Escape test
+        if (r > 1000.0 * BlackHole::AU)
+            return {state, false};
+
+        // ---------------- Adaptive step size ----------------
+
         double dl = dl_max;
-        double safety = 0.3; // fraction of r-S for near-horizon resolution
 
-        double r_s = spacetime.EventHorizon();
-        if(r < 10.0 * r_s) {
-            dl = safety * (r - r_s);  // closer = smaller step
-            dl = std::max(dl, 1.0);   // prevent zero step
+        if (r < 20.0 * r_s)   // only adapt near BH
+        {
+            double safety = 0.2;
+
+            double kr = state.k[1];         // radial 4-momentum
+            double dist = r - r_s;
+
+            dl = safety * dist / (std::abs(kr) + 1e-8);
+
+            // Clamp to sane range
+            dl = std::max(dl, 0.1);         // minimum step
+            dl = std::min(dl, dl_max);      // maximum step
         }
+
+        // ---------------- Integrate ONE step ----------------
 
         state = RK4_Step(state, dl, spacetime);
     }
 
-    return state;
+    return {state, false};
 }
 
+// ----------------------------------------- Generate a Photon from the camera -----------------------------------------
 inline GeodesicState PhotonFromCamera(const Camera& cam, int px, int py,
                                      const BlackHole::Spacetime& spacetime)
 {
@@ -152,10 +175,11 @@ inline GeodesicState PhotonFromCamera(const Camera& cam, int px, int py,
     return GeodesicState{{0.0, r, theta, phi}, {kt, dr, dtheta, dphi}};
 }
 
+// ------------------------------------------- Return a Color for the pixel --------------------------------------------
 inline Color SamplePhoton(const GeodesicState& final_state, const StarMap& star_map)
 {
     // Direction vector in Cartesian at infinity
-    double r = final_state.x[1];
+    double r     = final_state.x[1];
     double theta = final_state.x[2];
     double phi   = final_state.x[3];
 
