@@ -44,18 +44,20 @@ int main()
 
         for(int j = 0; j < width; ++j)
         {
-            GeodesicState init = PhotonFromCamera(cam, j, i, Schwarzschild);
-            TraceResult result = TracePhotonAdaptive(init, Schwarzschild);
+            GeodesicState init = PhotonFromCamera(cam, j, i, Schwarzschild);  // Generate Photon position and direction
+            TraceResult result = TracePhotonAdaptive(init, Schwarzschild);    // March the photon into the scene
 
             Color pixel;
 
+            // Finds the color of the pixrl
             if (result.captured)
             {
-                pixel = {0.0f, 0.0f, 0.0f};
+                // pixel = {1.0f, 0.0f, 0.0f};  // Color it red if it falls in (debugging)
+                pixel = {1.0f, 0.0f, 0.0f};  // Pixel should be black if it hits event horizon
             }
             else
             {
-                pixel = SamplePhoton(result.state, star_map);
+                pixel = SamplePhoton(result.state, star_map);  // Use the star map to color the pixel
             }
 
             // Linear tone map
