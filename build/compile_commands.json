@@ -1,7 +1,13 @@
 [
 {
   "directory": "/home/jackson-rankin/Developer/BlackHole_GR/build",
-  "command": "/usr/bin/c++  -I/home/jackson-rankin/Developer/BlackHole_GR/include -isystem /usr/include/OpenEXR -isystem /usr/include/Imath -std=gnu++17 -o CMakeFiles/blackhole.dir/src/main.cpp.o -c /home/jackson-rankin/Developer/BlackHole_GR/src/main.cpp",
+  "command": "/usr/bin/c++  -I/home/jackson-rankin/Developer/BlackHole_GR/include -isystem /usr/include/OpenEXR -isystem /usr/include/Imath -std=gnu++20 -o CMakeFiles/blackhole.dir/src/convert.cpp.o -c /home/jackson-rankin/Developer/BlackHole_GR/src/convert.cpp",
+  "file": "/home/jackson-rankin/Developer/BlackHole_GR/src/convert.cpp",
+  "output": "CMakeFiles/blackhole.dir/src/convert.cpp.o"
+},
+{
+  "directory": "/home/jackson-rankin/Developer/BlackHole_GR/build",
+  "command": "/usr/bin/c++  -I/home/jackson-rankin/Developer/BlackHole_GR/include -isystem /usr/include/OpenEXR -isystem /usr/include/Imath -std=gnu++20 -o CMakeFiles/blackhole.dir/src/main.cpp.o -c /home/jackson-rankin/Developer/BlackHole_GR/src/main.cpp",
   "file": "/home/jackson-rankin/Developer/BlackHole_GR/src/main.cpp",
   "output": "CMakeFiles/blackhole.dir/src/main.cpp.o"
 }

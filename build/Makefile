@@ -129,6 +129,30 @@ blackhole/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/blackhole.dir/build.make CMakeFiles/blackhole.dir/build
 .PHONY : blackhole/fast
 
+src/convert.o: src/convert.cpp.o
+.PHONY : src/convert.o
+
+# target to build an object file
+src/convert.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/blackhole.dir/build.make CMakeFiles/blackhole.dir/src/convert.cpp.o
+.PHONY : src/convert.cpp.o
+
+src/convert.i: src/convert.cpp.i
+.PHONY : src/convert.i
+
+# target to preprocess a source file
+src/convert.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/blackhole.dir/build.make CMakeFiles/blackhole.dir/src/convert.cpp.i
+.PHONY : src/convert.cpp.i
+
+src/convert.s: src/convert.cpp.s
+.PHONY : src/convert.s
+
+# target to generate assembly for a file
+src/convert.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/blackhole.dir/build.make CMakeFiles/blackhole.dir/src/convert.cpp.s
+.PHONY : src/convert.cpp.s
+
 src/main.o: src/main.cpp.o
 .PHONY : src/main.o
 
@@ -162,6 +186,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... blackhole"
+	@echo "... src/convert.o"
+	@echo "... src/convert.i"
+	@echo "... src/convert.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

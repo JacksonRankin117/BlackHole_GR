@@ -54,6 +54,7 @@ inline GeodesicState GetDerivatives(const GeodesicState& state, const BlackHole:
     Christoffel Gamma = spacetime.ChristoffelSymbols(state.x[1], state.x[2]);
 
     Math::Vec4 dk;
+
     for (int mu = 0; mu < 4; ++mu) {
         double sum = 0;
         for (int alpha = 0; alpha < 4; ++alpha) {
@@ -63,9 +64,12 @@ inline GeodesicState GetDerivatives(const GeodesicState& state, const BlackHole:
         }
         dk[mu] = sum;
     }
+
+
     deriv.k = dk;
     return deriv;
 }
+
 
 // --------------------------------------------- Performs a single RK4 step --------------------------------------------
 inline GeodesicState RK4_Step(const GeodesicState& state, double dl, const BlackHole::Spacetime& spacetime)
