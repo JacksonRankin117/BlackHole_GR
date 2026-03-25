@@ -2,6 +2,8 @@ StarMaps/starmap_2020_8k.exr
 StarMaps/starmap_2020_64k.exr
 StarMaps/starmap_2020_16k.exr
 
+.vscode
+
 build/
 .cache/
 bin/

@@ -15,7 +15,7 @@ public:
     explicit Stopwatch(int bar_width = 50)
         : bar_width(bar_width) {}
 
-    // -------------------- Timing --------------------
+    // ---------------------------------------------------- Timing -----------------------------------------------------
 
     void Start()
     {
@@ -35,7 +35,7 @@ public:
         return std::chrono::duration<double>(end - start_time).count();
     }
 
-    // -------------------- Progress Display --------------------
+    // ----------------------------------------------- Progress Display ------------------------------------------------
 
     void DisplayProgress(std::uint64_t current,
                          std::uint64_t total)
@@ -49,15 +49,15 @@ public:
 
         const double elapsed = ElapsedSeconds();
 
-        // ----- ETA -----
+        // ETA 
         double eta = 0.0;
         if (progress > 0.0 && progress < 1.0)
             eta = elapsed * (1.0 - progress) / progress;
 
-        // ----- Redraw line -----
+        // Redraw line
         std::cout << "\r\033[K";
 
-        // ----- Progress bar -----
+        // Progress bar 
         DrawBar(progress);
 
         // ----- Percent -----

@@ -15,17 +15,16 @@ struct Color {
     void static SaveImage(const char* filename, int width, int height, const std::vector<Color>& data)
     {
         std::ofstream ofs(filename, std::ios::binary);
-
-        // Write Header: PF (Color), Width Height, Aspect/Endianness
         ofs << "PF\n" << width << " " << height << "\n-1.0\n";
 
-        // Write Binary Data
-        // We cast the pointer to char* to write raw bytes
-        for (int y = height - 1; y >= 0; --y)
+        for (int y = height - 1; y >= 0; --y)  // PFM expects bottom-to-top
         {
-            const Color* row = &data[y * width];
-            ofs.write(reinterpret_cast<const char*>(row),
-                        width * sizeof(Color));
+            for (int x = 0; x < width; ++x)
+            {
+                const Color& c = data[y * width + x];
+                float rgb[3] = {c.r, c.g, c.b};
+                ofs.write(reinterpret_cast<const char*>(rgb), 3 * sizeof(float));
+            }
         }
 
         ofs.close();

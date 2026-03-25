@@ -1,7 +1,7 @@
 #pragma once
 
 #include "camera.h"
-#include "math.h"
+#include "math_objects.h"
 #include "blackhole.h"
 #include "starmap.h"
 #include "color.h"

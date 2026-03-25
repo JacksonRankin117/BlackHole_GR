@@ -8,14 +8,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Find OpenEXR
 find_package(OpenEXR REQUIRED)
 
-# Include local headers
-include_directories(include)
-
-# Collect all source files
+# Collect source files
 file(GLOB SRC_FILES src/*.cpp)
 
 # Create executable
 add_executable(blackhole ${SRC_FILES})
 
-# Link OpenEXR and pthread for threading
-target_link_libraries(blackhole OpenEXR::OpenEXR pthread)
+# Add your headers
+target_include_directories(blackhole PRIVATE include)
+
+# Link OpenEXR
+target_link_libraries(blackhole PRIVATE OpenEXR::OpenEXR)

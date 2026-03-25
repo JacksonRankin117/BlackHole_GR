@@ -1,5 +1,8 @@
+//#include <atomic>
 #include <iostream>
 #include <vector>
+#include <thread>
+#include <functional>
 
 #include "blackhole.h"
 #include "camera.h"
@@ -8,15 +11,20 @@
 #include "math.h"
 #include "starmap.h"
 #include "stopwatch.h"
+#include "thread_manager.h"
 
+
+// Function declaration 
+Color Render(const Camera& cam, int i, int j, const BlackHole::Spacetime& spacetime, const StarMap& starmap);
+//Color RenderFAST(const Camera& cam, int i, int j, BlackHole::Spacetime& spacetime, const StarMap& starmap);
 
 int main()
 {
     // ------------------------------------------------ Image Settings -------------------------------------------------
-    constexpr int width  = 200;  // Image width
-    constexpr int height = 100;  // Image height
+    constexpr int width  = 3840;  // Image width
+    constexpr int height = 2160;  // Image height
 
-    const int total = width * height;  // Image resolution
+    const int size = width * height;  // Image resolution
 
     std::vector<Color> image;       // Image data initialization
     image.resize(width * height);   // Pre-allocate memory for the image
@@ -41,66 +49,89 @@ int main()
 
     // Background
     StarMap star_map("StarMaps/starmap_2020_16k.exr");
+    //auto star_map_ptr = std::make_shared<StarMap>("StarMaps/starmap_2020_16k.exr");
 
     // Black hole
     BlackHole::Schwarzschild Schwarzschild(1.0e6 * BlackHole::M_Solar, {0, 0, 0}); // mass = 1 million Solar masses
 
-    // ---------------------------------------------------- Render -----------------------------------------------------
-    // Start stopwatch
+    // ------------------------------------------------ Multithreading -------------------------------------------------
+
+    // Create a threadmanager object with the image's dimensions
+    ThreadManager tm(width, height);  // Implicitly allocates the number of threads the program can use
+    
+    // Start the stopwatch
     sw.Start();
 
-    // Image loop
-    for(int i = 0; i < height; ++i)
+    // Debug code
+    // std::cout << "Image size: " << image.size() << "\n";
+    // std::cout << "Expected:   " << width * height << "\n";
+
+    // Lambda function for rendering
+    auto render_lambda = [&cam, &Schwarzschild, &star_map](int i, int j) {
+        return Render(cam, i, j, static_cast<const BlackHole::Spacetime&>(Schwarzschild), star_map);
+    };
+
+    // Force the render to happen in a separate scope to prevent segfaults
     {
-        for(int j = 0; j < width; ++j)
-        {
-            // Ray generation and marching
-            GeodesicState init = PhotonFromCamera(cam, j, i, Schwarzschild);  // Generate Photon position and direction
-            TraceResult result = TracePhotonAdaptive(init, Schwarzschild);    // March the photon into the scene
-
-            Color pixel;
-
-            // Finds the color of the pixrl
-            if (result.captured)
-            {
-                // pixel = {1.0f, 0.0f, 0.0f};  // Color it red if it falls in (debugging)
-                pixel = {0.0f, 0.0f, 0.0f};  // Pixel should be black if it hits event horizon
-            }
-            else
-            {
-                pixel = SamplePhoton(result.state, star_map);  // Use the star map to color the pixel
-            }
-
-            // Linear tone map
-            float exposure = 10.0f;
-            pixel.r = 1.0f - std::exp(-exposure * pixel.r);
-            pixel.g = 1.0f - std::exp(-exposure * pixel.g);
-            pixel.b = 1.0f - std::exp(-exposure * pixel.b);
-
-            // Gamma-correction
-            pixel.r = std::pow(pixel.r, 1.0f / 2.2f);
-            pixel.g = std::pow(pixel.g, 1.0f / 2.2f);
-            pixel.b = std::pow(pixel.b, 1.0f / 2.2f);
-
-            image[i*width + j] = pixel;
-
-            // Display pixel-by-pixel progress
-            int current = i * width + j + 1;
-
-            // Display output
-            if ((current % 10) == 0)   // Display progress every N iterations
-                sw.DisplayProgress(current, total);
-
-        }
+        // Render the image with the thread manager
+        tm.RenderThreaded(
+            render_lambda,  // pass the lambda
+            image,
+            sw
+        );
     }
-    // Stop the stopwatch
-    sw.Stop();
 
-    // Finish the render
+    // Stop the timer
+    sw.Stop();
     sw.Finish();
 
     // ----------------------------------------------------- Save ------------------------------------------------------
-    Color::SaveImage("output.pfm", width, height, image);
+    Color::SaveImage("output_1440p.pfm", width, height, image);
 
     return 0;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------- Function definitions ------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
+
+// Standard render
+Color Render(const Camera& cam, int i, int j, const BlackHole::Spacetime& spacetime, const StarMap& starmap) {
+    // Ray generation and marching
+    GeodesicState init = PhotonFromCamera(cam, j, i, spacetime);  // Generate Photon position and direction
+    TraceResult result = TracePhotonAdaptive(init, spacetime);    // March the photon into the scene
+
+    Color pixel;
+
+    // Finds the color of the pixrl
+    if (result.captured)
+    {
+        // pixel = {1.0f, 0.0f, 0.0f};  // Color it red if it falls in (debugging)
+        pixel = {0.0f, 0.0f, 0.0f};  // Pixel should be black if it hits event horizon
+    }
+    else
+    {
+        pixel = SamplePhoton(result.state, starmap);  // Use the star map to color the pixel
+    }
+
+    // Linear tone map
+    float exposure = 1.0f;
+    pixel.r = 1.0f - std::exp(-exposure * pixel.r);
+    pixel.g = 1.0f - std::exp(-exposure * pixel.g);
+    pixel.b = 1.0f - std::exp(-exposure * pixel.b);
+
+    // Gamma-correction
+    float gamma = 2.2f;
+    pixel.r = std::pow(pixel.r, 1.0f / gamma);
+    pixel.g = std::pow(pixel.g, 1.0f / gamma);
+    pixel.b = std::pow(pixel.b, 1.0f / gamma);
+
+    return pixel;
+}
+
+// Render using 
+Color RenderSchwarzschildFAST(const Camera& cam, int i, int j, BlackHole::Spacetime& spacetime, const StarMap& starmap) {
+
+
+    return Color();
 }
