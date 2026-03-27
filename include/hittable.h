@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "ray.h"
 
 class Material;
@@ -9,7 +11,7 @@ struct HitRecord {
     Math::Vec4 point;     // Where the ray hit the hittable
     Math::Vec3 normal;    // spatial surface normal
     double lambda;        // distance along the ray to the hit point
-    const Material* mat;  // material at the hit point
+   std::shared_ptr<Material> mat = nullptr;  // material at the hit point
 };
 
 // ----------------------------------------------------- Hittable ------------------------------------------------------

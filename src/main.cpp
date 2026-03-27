@@ -1,18 +1,20 @@
-#include <iostream>
+//#include <iostream>
 #include <vector>
 
 #include "blackhole.h"
 #include "camera.h"
 #include "color.h"
 #include "geodesic_integrator.h"
+#include "hittable_list.h"
 #include "math.h"
 #include "starmap.h"
 #include "stopwatch.h"
+#include "sphere.h"
 
 
 int main()
 {
-    // ------------------------------------------------ Image Settings -------------------------------------------------
+    // ================================================ Image Settings =================================================
     constexpr int width  = 200;  // Image width
     constexpr int height = 100;  // Image height
 
@@ -24,7 +26,57 @@ int main()
     // Render timer
     Stopwatch sw{60};
 
-    // ---------------------------------------------------- Camera -----------------------------------------------------
+    // ===================================================== Scene =====================================================
+
+    // Background
+    StarMap star_map("StarMaps/starmap_2020_16k.exr");
+
+    // Black hole
+    BlackHole::Schwarzschild Schwarzschild(1.0e6 * BlackHole::M_Solar, {0, 0, 0}); // mass = 1 million Solar masses
+
+    // ---------------------------------------------------- Objects ----------------------------------------------------
+    HittableList world;
+
+    // --- Red diffuse sphere ---
+    auto red_material = std::make_shared<OneColor>(Color{1.0, 0.0, 0.0});
+
+    auto sphere1 = std::make_shared<Sphere>(
+        Math::Vec4{ 0.0,                 // T
+                    0.1 * BlackHole::AU, // X
+                    0.0,                 // Y
+                    0.0 },               // Z
+        0.01 * BlackHole::AU,            // Radius
+        red_material.get()               // Material
+    );
+    world.Add(sphere1);
+
+    // --- Blue diffuse sphere ---
+    auto blue_material = std::make_shared<OneColor>(Color{0.0, 0.0, 1.0});
+
+    auto sphere2 = std::make_shared<Sphere>(
+        Math::Vec4{ 0.0,                 // T
+                    0.2 * BlackHole::AU, // X
+                    0.1 * BlackHole::AU, // Y
+                    0.0 },               // Z
+        0.01 * BlackHole::AU,            // Radius
+        blue_material.get()              // Material
+    );
+    world.Add(sphere2);
+
+    // --- Hot blackbody sphere ---
+    auto hot_material = std::make_shared<Blackbody>(5000.0); // Kelvin
+
+    auto sphere3 = std::make_shared<Sphere>(
+        Math::Vec4{ 0.00,                    // T
+                   -0.10 * BlackHole::AU,    // X
+                   -0.10 * BlackHole::AU,    // Y
+                    0.05 * BlackHole::AU },  // Z
+        0.01 * BlackHole::AU,                // Radius
+        hot_material.get()                   // Material
+    );
+    world.Add(sphere3);
+
+    // ===================================================== Camera =====================================================
     Math::Vec3 camPos  = {0.5 * BlackHole::AU, 0.0, 0.0};  // Camera position at 0.5 AU along the X-axis
     Math::Vec3 target  = {0.0, 0.0, 0.0};                  // Stare at the origin like some sort of freaking creep
     Math::Vec3 upVec   = {0.0, 0.0, 1.0};                  // (0, 0, 1) aligns with the north celestial pole
@@ -37,15 +89,7 @@ int main()
                target,  // Target position
                upVec);  // Up vector
 
-    // ----------------------------------------------------- Scene -----------------------------------------------------
-
-    // Background
-    StarMap star_map("StarMaps/starmap_2020_16k.exr");
-
-    // Black hole
-    BlackHole::Schwarzschild Schwarzschild(1.0e6 * BlackHole::M_Solar, {0, 0, 0}); // mass = 1 million Solar masses
-
-    // ---------------------------------------------------- Render -----------------------------------------------------
+    // ==================================================== Render =====================================================
     // Start stopwatch
     sw.Start();
 
@@ -56,19 +100,21 @@ int main()
         {
             // Ray generation and marching
             GeodesicState init = PhotonFromCamera(cam, j, i, Schwarzschild);  // Generate Photon position and direction
-            TraceResult result = TracePhotonAdaptive(init, Schwarzschild);    // March the photon into the scene
+            TraceResult result = TracePhotonAdaptive(init, Schwarzschild, world);    // March the photon into the scene
 
             Color pixel;
 
-            // Finds the color of the pixrl
-            if (result.captured)
-            {
-                // pixel = {1.0f, 0.0f, 0.0f};  // Color it red if it falls in (debugging)
-                pixel = {0.0f, 0.0f, 0.0f};  // Pixel should be black if it hits event horizon
-            }
-            else
-            {
-                pixel = SamplePhoton(result.state, star_map);  // Use the star map to color the pixel
+            // Finds the color of the pixel
+            if (result.captured) {
+                // Color the pixel black if the photon is captured
+                pixel = {0.0f, 0.0f, 0.0f}; // black hole
+            } else if (result.mat) {
+                // If it hits a Hittable object, color it in
+                Ray ray(result.state.x, result.state.k); // reconstruct ray
+                pixel = result.mat->Shade(ray, result.hit); // color the sphere
+            } else {
+                // If it misses completely, color the pixel with information from thew skymap
+                pixel = SamplePhoton(result.state, star_map); // background
             }
 
             // Linear tone map
@@ -99,7 +145,7 @@ int main()
     // Finish the render
     sw.Finish();
 
-    // ----------------------------------------------------- Save ------------------------------------------------------
+    // ===================================================== Save ======================================================
     Color::SaveImage("output.pfm", width, height, image);
 
     return 0;

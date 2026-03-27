@@ -5,6 +5,7 @@
 #include "blackhole.h"
 #include "starmap.h"
 #include "color.h"
+#include "hittable_list.h"
 
 
 // ------------------------------------- Stores the state of a geodesic trajectory -------------------------------------
@@ -42,8 +43,10 @@ struct GeodesicState {
 
 // -------------------------------------------- Results of the Ray Tracing ---------------------------------------------
 struct TraceResult {
-    GeodesicState state;
-    bool captured;
+    GeodesicState state;                      // State of of the photon
+    bool captured;                            // Only true if the black hole captures the photon
+    std::shared_ptr<Material> mat = nullptr;  // Material of the hit obnject
+    HitRecord hit;                            // HitRecord object for a more detailed intersection
 };
 
 // ----------------------------------- Computes the derivatives of a geodesic state ------------------------------------
@@ -107,6 +110,7 @@ inline GeodesicState TracePhoton(const GeodesicState& init,             // Initi
 // ------------------------------------------ Adaptive step size integration -------------------------------------------
 inline TraceResult TracePhotonAdaptive(const GeodesicState& init,
                                        const BlackHole::Spacetime& spacetime,
+                                       const HittableList& hittables,
                                        double dl_max = 1.0e7,
                                        int max_steps = 20000)
 {
@@ -117,40 +121,43 @@ inline TraceResult TracePhotonAdaptive(const GeodesicState& init,
     {
         double r = state.x[1];
 
-        //  Capture test (with safety margin)
+        // Photon falls into black hole
         if (r < 1.0001 * r_s)
-            return {state, true};
+            return TraceResult{state, true, nullptr, HitRecord{}};
 
-        //  Escape test
+        // Photon escapes to far away
         if (r > 1000.0 * BlackHole::AU)
-            return {state, false};
+            return TraceResult{state, false, nullptr, HitRecord{}};
+
+        // Ray for intersection tests
+        Ray ray(state.x, state.k);
+
+        // Check for intersection with objects
+        HitRecord rec;
+        if (hittables.Intersect(ray, 0.0, dl_max, rec))
+        {
+            return TraceResult{state, false, rec.mat, rec}; // now compiles
+        }
 
         // ---------------- Adaptive step size ----------------
-
         double dl = dl_max;
-
-        if (r < 20.0 * r_s)   // only adapt near BH
+        if (r < 20.0 * r_s)
         {
             double safety = 0.2;
-
-            double kr = state.k[1];         // radial 4-momentum
+            double kr = state.k[1];
             double dist = r - r_s;
 
             dl = safety * dist / (std::abs(kr) + 1e-8);
-
-            // Clamp to sane range
-            dl = std::max(dl, 0.1);         // minimum step
-            dl = std::min(dl, dl_max);      // maximum step
+            dl = std::max(dl, 0.1);
+            dl = std::min(dl, dl_max);
         }
-
-        // ---------------- Integrate ONE step ----------------
 
         state = RK4_Step(state, dl, spacetime);
     }
 
-    return {state, false};
+    // Max steps reached without capture or intersection
+    return TraceResult{state, false, nullptr, HitRecord{}};
 }
-
 // ----------------------------------------- Generate a Photon from the camera -----------------------------------------
 inline GeodesicState PhotonFromCamera(const Camera& cam, int px, int py,
                                      const BlackHole::Spacetime& spacetime)

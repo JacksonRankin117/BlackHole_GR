@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -82,5 +83,12 @@ struct Color {
         b = Clamp(b, min_val, max_val);
     }
 
-    static Color FromBlackbody(double T);  // Edit later to grab a color based on temperature
+    static Color FromBlackbody(double T) {
+        // Simple approximation of blackbody color
+        float R = std::min(1.0, std::max(0.0, 1.0 * (T / 6500.0)));
+        float G = std::min(1.0, std::max(0.0, 0.8 * (T / 6500.0)));
+        float B = std::min(1.0, std::max(0.0, 0.6 * (T / 6500.0)));
+
+        return Color{R, G, B};
+    }
 };

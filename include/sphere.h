@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "hittable.h"
 #include "material.h"
 
@@ -7,8 +9,8 @@
 class Sphere : public Hittable {
 public:
     // Constructor
-    Sphere(const Math::Vec4& center, double radius, const Material* mat) noexcept
-        : s_center(center), s_radius(radius), s_mat(mat) {}
+    Sphere(const Math::Vec4& center, double radius, std::shared_ptr<Material> mat) noexcept
+        : s_center(center), s_radius(radius), s_mat(std::move(mat)) {}
 
     // ----------------------------------------------- Ray intersection ------------------------------------------------
     bool Intersect(const Ray& ray, double lambda_min, double lambda_max, HitRecord& rec) const noexcept override
@@ -35,12 +37,13 @@ public:
 
 private:
     // Returns the spatial coordinates of a Vec4 point
-    static Math::Vec3 Spatial(const Math::Vec4& v) noexcept
-    {
-        return {v.X, v.Y, v.Z};
-    }
+    private:
+        static Math::Vec3 Spatial(const Math::Vec4& v) noexcept
+        {
+            return {v.X, v.Y, v.Z};
+        }
 
-    Math::Vec4        s_center;  // Center of the sphere in Minkowski space
-    double            s_radius;  // Radius of the sphere in Minkowski space
-    const Material*   s_mat;     // Material of the sphere
+    Math::Vec4                s_center;
+    double                    s_radius;
+    std::shared_ptr<Material> s_mat;
 };
