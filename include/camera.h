@@ -1,6 +1,6 @@
 #pragma once
 
-#include "math.h"
+#include "math_objects.h"
 #include "ray.h"
 //#include "blackhole.h"
 

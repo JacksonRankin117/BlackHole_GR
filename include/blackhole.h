@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <limits>
 
-#include "math.h"
+#include "math_objects.h"
 
 using namespace Math;
 

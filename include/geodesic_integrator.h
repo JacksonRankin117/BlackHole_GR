@@ -1,45 +1,16 @@
 #pragma once
 
-#include "camera.h"
-#include "math.h"
 #include "blackhole.h"
-#include "starmap.h"
+#include "camera.h"
 #include "color.h"
+#include "geodesic_segment.h"
+#include "geodesic_state.h"
 #include "hittable_list.h"
+#include "math_objects.h"
+#include "starmap.h"
 
-
-// ------------------------------------- Stores the state of a geodesic trajectory -------------------------------------
-struct GeodesicState {
-    Math::Vec4 x;
-    Math::Vec4 k;
-
-    GeodesicState operator+(const GeodesicState& b) const {
-        GeodesicState out;
-        for(int i=0;i<4;i++){
-            out.x[i] = x[i] + b.x[i];
-            out.k[i] = k[i] + b.k[i];
-        }
-        return out;
-    }
-
-    GeodesicState operator*(double s) const {
-        GeodesicState out;
-        for(int i=0;i<4;i++){
-            out.x[i] = s * x[i];
-            out.k[i] = s * k[i];
-        }
-        return out;
-    }
-
-    friend GeodesicState operator*(double s, const GeodesicState& a) {
-        GeodesicState out;
-        for(int i=0;i<4;i++){
-            out.x[i] = s * a.x[i];
-            out.k[i] = s * a.k[i];
-        }
-        return out;
-    }
-};
+#include <algorithm>
+#include <cmath>
 
 // -------------------------------------------- Results of the Ray Tracing ---------------------------------------------
 struct TraceResult {
@@ -108,56 +79,88 @@ inline GeodesicState TracePhoton(const GeodesicState& init,             // Initi
 }
 
 // ------------------------------------------ Adaptive step size integration -------------------------------------------
-inline TraceResult TracePhotonAdaptive(const GeodesicState& init,
-                                       const BlackHole::Spacetime& spacetime,
-                                       const HittableList& hittables,
-                                       double dl_max = 1.0e7,
-                                       int max_steps = 20000)
+inline TraceResult TracePhotonAdaptive(
+    const GeodesicState& init,
+    const BlackHole::Spacetime& spacetime,
+    const HittableList& hittables,
+    double dl_max = 1.0e7,
+    int max_steps = 20000)
 {
     GeodesicState state = init;
+
     double r_s = spacetime.EventHorizon();
 
-    for(int step = 0; step < max_steps; ++step)
+    // affine parameter
+    double lambda = 0.0;
+    double dl = dl_max;
+
+    constexpr double eps = 1e-6;
+
+    for (int step = 0; step < max_steps; ++step)
     {
         double r = state.x[1];
 
-        // Photon falls into black hole
-        if (r < 1.0001 * r_s)
+        // ---------------- Horizon crossing (robust) ----------------
+        if (r <= 1.01 * r_s)
             return TraceResult{state, true, nullptr, HitRecord{}};
 
-        // Photon escapes to far away
-        if (r > 1000.0 * BlackHole::AU)
+        // optional escape cutoff
+        if (r > 1000.0 * r_s)
             return TraceResult{state, false, nullptr, HitRecord{}};
 
-        // Ray for intersection tests
-        Ray ray(state.x, state.k);
+        // ---------------- RK4 integration in affine parameter ----------------
+        GeodesicState k1 = GetDerivatives(state, spacetime);
+        GeodesicState k2 = GetDerivatives(state + k1 * (0.5 * dl), spacetime);
+        GeodesicState k3 = GetDerivatives(state + k2 * (0.5 * dl), spacetime);
+        GeodesicState k4 = GetDerivatives(state + k3 * dl, spacetime);
 
-        // Check for intersection with objects
+        GeodesicState next = state + (dl / 6.0) * (k1 + 2.0*k2 + 2.0*k3 + k4);
+
+        // ---------------- Local tangent ray for intersection ----------------
+        Math::Vec4 k{
+            0.0,
+            state.k[1],
+            state.k[2],
+            state.k[3]
+        };
+
+        Ray ray(state.x, k);
+
         HitRecord rec;
-        if (hittables.Intersect(ray, 0.0, dl_max, rec))
+        if (hittables.Intersect(ray, 0.0, dl, rec))
         {
-            return TraceResult{state, false, rec.mat, rec}; // now compiles
+            return TraceResult{state, false, rec.mat, rec};
         }
 
-        // ---------------- Adaptive step size ----------------
-        double dl = dl_max;
-        if (r < 20.0 * r_s)
+        // ---------------- commit step ----------------
+        double r_next = next.x[1];
+
+        state = next;
+        lambda += dl;
+
+        // ---------------- affine-aware adaptive stepping ----------------
+        double r_mid = 0.5 * (r + r_next);
+
+        double curvature_scale = std::max(r_mid - r_s, eps);
+        double kappa = std::abs(state.k[1]) + eps;
+
+        double safety = 0.25;
+
+        if (r_mid < 25.0 * r_s)
         {
-            double safety = 0.2;
-            double kr = state.k[1];
-            double dist = r - r_s;
-
-            dl = safety * dist / (std::abs(kr) + 1e-8);
-            dl = std::max(dl, 0.1);
-            dl = std::min(dl, dl_max);
+            dl = safety * curvature_scale / kappa;
+            dl = std::clamp(dl, 1e-4, dl_max);
         }
-
-        state = RK4_Step(state, dl, spacetime);
+        else
+        {
+            dl = dl_max;
+        }
     }
 
-    // Max steps reached without capture or intersection
     return TraceResult{state, false, nullptr, HitRecord{}};
 }
+
+
 // ----------------------------------------- Generate a Photon from the camera -----------------------------------------
 inline GeodesicState PhotonFromCamera(const Camera& cam, int px, int py,
                                      const BlackHole::Spacetime& spacetime)

@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include "hittable.h"
+#include "geodesic_segment.h"
 
 class HittableList : public Hittable {
 public:
@@ -43,7 +44,26 @@ public:
 
         return hit_anything;
     }
+    
+    // Better intersection
+    bool IntersectSegment(const GeodesicSegment& seg, HitRecord& rec) const
+    {
+        constexpr int N = 8;
 
+        for (int i = 0; i <= N; ++i)
+        {
+            double t = double(i) / double(N);
+
+            Math::Vec4 x = seg.a.x * (1.0 - t) + seg.b.x * t;
+
+            Ray ray(x, seg.a.k); // tangent approximation
+
+            if (Intersect(ray, 0.0, 1e7, rec))
+                return true;
+        }
+
+        return false;
+    }
 private:
     std::vector<std::shared_ptr<Hittable>> objects;
 };

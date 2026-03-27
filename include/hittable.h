@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "math_objects.h"
 #include "ray.h"
 
 class Material;

@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/Users/jacksonrankin/Developer/BlackHole_GR/include/**",
+                "/opt/homebrew/opt/openexr/include",
+                "/opt/homebrew/opt/imath/include/Imath"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "intelliSenseMode": "macos-clang-arm64"
+        }
+    ],
+    "version": 4
+}

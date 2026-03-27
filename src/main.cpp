@@ -6,7 +6,7 @@
 #include "color.h"
 #include "geodesic_integrator.h"
 #include "hittable_list.h"
-#include "math.h"
+#include "math_objects.h"
 #include "starmap.h"
 #include "stopwatch.h"
 #include "sphere.h"
@@ -15,8 +15,8 @@
 int main()
 {
     // ================================================ Image Settings =================================================
-    constexpr int width  = 200;  // Image width
-    constexpr int height = 100;  // Image height
+    constexpr int width  = 400;  // Image width
+    constexpr int height = 300;  // Image height
 
     const int total = width * height;  // Image resolution
 
@@ -41,12 +41,12 @@ int main()
     auto red_material = std::make_shared<OneColor>(Color{1.0, 0.0, 0.0});
 
     auto sphere1 = std::make_shared<Sphere>(
-        Math::Vec4{ 0.0,                 // T
-                    0.1 * BlackHole::AU, // X
-                    0.0,                 // Y
-                    0.0 },               // Z
-        0.01 * BlackHole::AU,            // Radius
-        red_material.get()               // Material
+        Math::Vec4{ 0.0,                   // T
+                    0.0 * BlackHole::AU,   // X
+                    0.05 * BlackHole::AU,  // Y
+                    0.0 },                 // Z
+        0.02 * BlackHole::AU,              // Radius
+        red_material                       // Material
     );
     world.Add(sphere1);
 
@@ -59,7 +59,7 @@ int main()
                     0.1 * BlackHole::AU, // Y
                     0.0 },               // Z
         0.01 * BlackHole::AU,            // Radius
-        blue_material.get()              // Material
+        blue_material                    // Material
     );
     world.Add(sphere2);
 
@@ -72,11 +72,11 @@ int main()
                    -0.10 * BlackHole::AU,    // Y
                     0.05 * BlackHole::AU },  // Z
         0.01 * BlackHole::AU,                // Radius
-        hot_material.get()                   // Material
+        hot_material                         // Material
     );
     world.Add(sphere3);
 
-    // ===================================================== Camera =====================================================
+    // ==================================================== Camera =====================================================
     Math::Vec3 camPos  = {0.5 * BlackHole::AU, 0.0, 0.0};  // Camera position at 0.5 AU along the X-axis
     Math::Vec3 target  = {0.0, 0.0, 0.0};                  // Stare at the origin like some sort of freaking creep
     Math::Vec3 upVec   = {0.0, 0.0, 1.0};                  // (0, 0, 1) aligns with the north celestial pole
