@@ -3,9 +3,11 @@
 #include <OpenEXR/ImfRgbaFile.h>
 #include <OpenEXR/ImfRgba.h>
 #include <OpenEXR/ImfArray.h>
-
 #include <cmath>
+
 #include "color.h"
+#include "math_objects.h"
+
 
 class StarMap {
 public:

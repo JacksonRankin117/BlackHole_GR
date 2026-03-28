@@ -50,6 +50,7 @@ namespace BlackHole {
 
             virtual double EventHorizon() const = 0;
     };
+
     // --------------------------------------------------- Minkowski ---------------------------------------------------
     class Minkowski : public Spacetime {  // Flat spacetime
     public:

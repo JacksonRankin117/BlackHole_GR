@@ -1,4 +1,3 @@
-//#include <iostream>
 #include <vector>
 
 #include "blackhole.h"
@@ -11,17 +10,20 @@
 #include "stopwatch.h"
 #include "sphere.h"
 
+// =============================================== Function Declarations ===============================================
+void render(Camera& cam,
+            int width,
+            int height,
+            BlackHole::Spacetime& spacetime,
+            HittableList& world,
+            StarMap& star_map,
+            Stopwatch sw);
 
 int main()
 {
     // ================================================ Image Settings =================================================
-    constexpr int width  = 400;  // Image width
-    constexpr int height = 300;  // Image height
-
-    const int total = width * height;  // Image resolution
-
-    std::vector<Color> image;       // Image data initialization
-    image.resize(width * height);   // Pre-allocate memory for the image
+    constexpr int width  = 200;  // Image width
+    constexpr int height = 100;  // Image height
 
     // Render timer
     Stopwatch sw{60};
@@ -32,7 +34,7 @@ int main()
     StarMap star_map("StarMaps/starmap_2020_16k.exr");
 
     // Black hole
-    BlackHole::Schwarzschild Schwarzschild(1.0e6 * BlackHole::M_Solar, {0, 0, 0}); // mass = 1 million Solar masses
+    BlackHole::Schwarzschild schwarzschild(1.0e6 * BlackHole::M_Solar, {0, 0, 0}); // mass = 1 million Solar masses
 
     // ---------------------------------------------------- Objects ----------------------------------------------------
     HittableList world;
@@ -90,17 +92,38 @@ int main()
                upVec);  // Up vector
 
     // ==================================================== Render =====================================================
-    // Start stopwatch
+    render(cam, width, height, schwarzschild, world, star_map, sw);
+
+    return 0;
+}
+
+// =====================================================================================================================
+// =============================================== Function definitions ================================================
+// =====================================================================================================================
+void render(Camera& cam,
+            int width,
+            int height,
+            BlackHole::Spacetime& spacetime,
+            HittableList& world,
+            StarMap& star_map,
+            Stopwatch sw)
+{
+
+    // Pre-allocate a vector to hold the image
+    const int total = width * height;
+    std::vector<Color> image;
+    image.resize(width * height);
+
+    // Start the stopwatch
     sw.Start();
 
-    // Image loop
     for(int i = 0; i < height; ++i)
     {
         for(int j = 0; j < width; ++j)
         {
             // Ray generation and marching
-            GeodesicState init = PhotonFromCamera(cam, j, i, Schwarzschild);  // Generate Photon position and direction
-            TraceResult result = TracePhotonAdaptive(init, Schwarzschild, world);    // March the photon into the scene
+            GeodesicState init = PhotonFromCamera(cam, j, i, spacetime);  // Generate Photon position and direction
+            TraceResult result = TracePhotonAdaptive(init, spacetime, world);    // March the photon into the scene
 
             Color pixel;
 
@@ -139,14 +162,13 @@ int main()
 
         }
     }
+
     // Stop the stopwatch
     sw.Stop();
 
     // Finish the render
     sw.Finish();
 
-    // ===================================================== Save ======================================================
+    // Save to a PFM file
     Color::SaveImage("output.pfm", width, height, image);
-
-    return 0;
 }

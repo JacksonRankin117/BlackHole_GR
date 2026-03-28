@@ -3,7 +3,6 @@
 #include "blackhole.h"
 #include "camera.h"
 #include "color.h"
-#include "geodesic_segment.h"
 #include "geodesic_state.h"
 #include "hittable_list.h"
 #include "math_objects.h"
@@ -90,9 +89,9 @@ inline TraceResult TracePhotonAdaptive(
 
     double r_s = spacetime.EventHorizon();
 
-    // affine parameter
+    // Affine parameter along the geodesic
     double lambda = 0.0;
-    double dl = dl_max;
+    double dl     = dl_max;
 
     constexpr double eps = 1e-6;
 
@@ -100,15 +99,19 @@ inline TraceResult TracePhotonAdaptive(
     {
         double r = state.x[1];
 
-        // ---------------- Horizon crossing (robust) ----------------
+        // -------------------- Horizon crossing --------------------
+        // If the photon has fallen to (or inside) the event horizon, it's captured.
+        // The 1.01 factor gives a small numerical safety margin.
         if (r <= 1.01 * r_s)
             return TraceResult{state, true, nullptr, HitRecord{}};
 
-        // optional escape cutoff
+        // -------------------- Escape cutoff --------------------
+        // If the photon is far enough away, it has escaped. Stop tracing.
         if (r > 1000.0 * r_s)
             return TraceResult{state, false, nullptr, HitRecord{}};
 
-        // ---------------- RK4 integration in affine parameter ----------------
+        // -------------------- RK4 integration --------------------
+        // Advance the geodesic by one affine step using a 4th-order Runge-Kutta integrator.
         GeodesicState k1 = GetDerivatives(state, spacetime);
         GeodesicState k2 = GetDerivatives(state + k1 * (0.5 * dl), spacetime);
         GeodesicState k3 = GetDerivatives(state + k2 * (0.5 * dl), spacetime);
@@ -116,58 +119,113 @@ inline TraceResult TracePhotonAdaptive(
 
         GeodesicState next = state + (dl / 6.0) * (k1 + 2.0*k2 + 2.0*k3 + k4);
 
-        // ---------------- Local tangent ray for intersection ----------------
-        Math::Vec4 k{
+        // -------------------- Coordinate conversion: spherical → Cartesian --------------------
+        //
+        // The photon state is tracked in Boyer-Lindquist / Schwarzschild spherical coordinates:
+        //   state.x = { T, r, θ, φ }
+        //   state.k = { kᵗ, kʳ, kᶿ, kᵠ }
+        //
+        // But scene objects (spheres, etc.) are placed in Cartesian coordinates (X, Y, Z).
+        // To do a geometrically correct ray-object intersection, we must express both the
+        // photon's position and its direction in the same Cartesian space.
+        //
+        // Step 1: Extract spherical coordinates and precompute trig values.
+        double r_sph  = state.x[1];
+        double theta  = state.x[2];
+        double phi    = state.x[3];
+
+        double sinT = std::sin(theta);
+        double cosT = std::cos(theta);
+        double sinP = std::sin(phi);
+        double cosP = std::cos(phi);
+
+        // Step 2: Convert photon position to Cartesian.
+        //   X = r sin(θ) cos(φ)
+        //   Y = r sin(θ) sin(φ)
+        //   Z = r cos(θ)
+        Math::Vec4 cartPos{
             0.0,
-            state.k[1],
-            state.k[2],
-            state.k[3]
+            r_sph * sinT * cosP,   // X
+            r_sph * sinT * sinP,   // Y
+            r_sph * cosT           // Z
         };
 
-        Ray ray(state.x, k);
+        // Step 3: Convert the spatial 4-velocity components to Cartesian.
+        //
+        // This applies the Jacobian of the spherical-to-Cartesian map to the
+        // spherical velocity vector (kʳ, kᶿ, kᵠ):
+        //
+        //   kˣ = sin(θ)cos(φ)·kʳ  +  r·cos(θ)cos(φ)·kᶿ  -  r·sin(θ)sin(φ)·kᵠ
+        //   kʸ = sin(θ)sin(φ)·kʳ  +  r·cos(θ)sin(φ)·kᶿ  +  r·sin(θ)cos(φ)·kᵠ
+        //   kᶻ = cos(θ)·kʳ        -  r·sin(θ)·kᶿ
+        //
+        // (This is the same Jacobian used in PhotonFromCamera, but applied in reverse.)
+        double kr     = state.k[1];
+        double ktheta = state.k[2];
+        double kphi   = state.k[3];
+
+        Math::Vec4 cartDir{
+            0.0,
+            sinT * cosP * kr  +  r_sph * cosT * cosP * ktheta  -  r_sph * sinT * sinP * kphi,  // kˣ
+            sinT * sinP * kr  +  r_sph * cosT * sinP * ktheta  +  r_sph * sinT * cosP * kphi,  // kʸ
+            cosT        * kr  -  r_sph * sinT         * ktheta                                  // kᶻ
+        };
+
+        // -------------------- Object intersection test --------------------
+        // Build a Cartesian ray and test it against all scene objects.
+        // Both origin and direction are now in Cartesian space, matching the
+        // coordinate system used by the sphere centers.
+        Ray ray(cartPos, cartDir);
 
         HitRecord rec;
         if (hittables.Intersect(ray, 0.0, dl, rec))
         {
+            // The photon has hit an object — return its material and hit record.
             return TraceResult{state, false, rec.mat, rec};
         }
 
-        // ---------------- commit step ----------------
+        // -------------------- Commit the RK4 step --------------------
         double r_next = next.x[1];
 
-        state = next;
+        state   = next;
         lambda += dl;
 
-        // ---------------- affine-aware adaptive stepping ----------------
+        // -------------------- Adaptive step size --------------------
+        // Near the black hole, spacetime curvature is large and we need smaller steps
+        // to keep the integration accurate. Far away, we can take larger steps.
+        //
+        // The step size is scaled by how close the photon is to the horizon,
+        // divided by the radial velocity component to avoid over-shooting.
         double r_mid = 0.5 * (r + r_next);
 
         double curvature_scale = std::max(r_mid - r_s, eps);
-        double kappa = std::abs(state.k[1]) + eps;
+        double kappa           = std::abs(state.k[1]) + eps;
 
         double safety = 0.25;
 
         if (r_mid < 25.0 * r_s)
         {
+            // Close to the black hole: shrink the step proportionally to proximity.
             dl = safety * curvature_scale / kappa;
             dl = std::clamp(dl, 1e-4, dl_max);
         }
         else
         {
+            // Far from the black hole: use the maximum step size.
             dl = dl_max;
         }
     }
 
+    // Exceeded max steps without hitting anything or escaping — return the final state.
     return TraceResult{state, false, nullptr, HitRecord{}};
 }
-
-
 // ----------------------------------------- Generate a Photon from the camera -----------------------------------------
 inline GeodesicState PhotonFromCamera(const Camera& cam, int px, int py,
                                      const BlackHole::Spacetime& spacetime)
 {
     // Get the Cartesian ray direction from camera
     Ray r_gen = cam.GenerateRay(px, py);
-    Math::Vec3 d = r_gen.ReturnDirection(); // This is (dx, dy, dz) in Cartesian
+    Math::Vec3 d = r_gen.Direction(); // This is (dx, dy, dz) in Cartesian
 
     // Observer position in Spherical
     Math::Vec3 pos = cam.Position();

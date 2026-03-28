@@ -81,12 +81,12 @@ clean: CMakeFiles/blackhole.dir/clean
 CMakeFiles/blackhole.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/blackhole.dir/build.make CMakeFiles/blackhole.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/blackhole.dir/build.make CMakeFiles/blackhole.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/jackson-rankin/Developer/BlackHole_GR/build/CMakeFiles --progress-num=1,2,3 "Built target blackhole"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/jackson-rankin/Developer/BlackHole_GR/build/CMakeFiles --progress-num=1,2 "Built target blackhole"
 .PHONY : CMakeFiles/blackhole.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/blackhole.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/jackson-rankin/Developer/BlackHole_GR/build/CMakeFiles 3
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/jackson-rankin/Developer/BlackHole_GR/build/CMakeFiles 2
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/blackhole.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/jackson-rankin/Developer/BlackHole_GR/build/CMakeFiles 0
 .PHONY : CMakeFiles/blackhole.dir/rule

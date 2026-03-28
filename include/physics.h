@@ -11,7 +11,7 @@ inline void EulerStep(Ray& ray,
                       double dlambda)
 {
     // Convert current position to spherical coordinates (r, theta, phi)
-    Vec3 dir = ray.ReturnDirection();
+    Vec3 dir = ray.Direction();
     double r     = ray.origin.Magnitude();           // radial distance
     double theta = std::acos(dir.Z / r);     // polar angle
     double phi   = std::atan2(dir.Y, dir.X); // azimuthal angle

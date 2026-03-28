@@ -15,23 +15,35 @@ public:
     // ----------------------------------------------- Ray intersection ------------------------------------------------
     bool Intersect(const Ray& ray, double lambda_min, double lambda_max, HitRecord& rec) const noexcept override
     {
-        //
-        Math::Vec3 pos = Spatial(ray.origin);
+        Math::Vec3 pos    = Spatial(ray.origin);
         Math::Vec3 center = Spatial(s_center);
+        Math::Vec3 dir    = ray.Direction();
 
-        Math::Vec3 diff = pos - center;
+        Math::Vec3 oc = pos - center;
 
-        double dist2 = Math::Vec3::Dot(diff, diff);
+        double a = Math::Vec3::Dot(dir, dir);
+        double b = 2.0 * Math::Vec3::Dot(oc, dir);
+        double c = Math::Vec3::Dot(oc, oc) - s_radius * s_radius;
 
-        if (dist2 > s_radius * s_radius)
+        double discriminant = b * b - 4.0 * a * c;
+        if (discriminant < 0.0)
             return false;
 
-        rec.lambda = 0.0;
-        rec.point  = ray.origin;
+        double sqrt_disc = std::sqrt(discriminant);
 
-        rec.normal = diff / s_radius;
+        // Try the nearer root first
+        double t = (-b - sqrt_disc) / (2.0 * a);
+        if (t < lambda_min || t > lambda_max) {
+            t = (-b + sqrt_disc) / (2.0 * a);
+            if (t < lambda_min || t > lambda_max)
+                return false;
+        }
+
+        rec.lambda = t;
+        rec.point  = ray.origin; // or interpolate along ray by t if your Ray supports it
+        Math::Vec3 hit_point = pos + t * dir;
+        rec.normal = (hit_point - center) / s_radius;
         rec.mat    = s_mat;
-
         return true;
     }
 
