@@ -67,7 +67,7 @@ namespace BlackHole {
         // Metric tensor η_{μν}
         Matrix Metric(double, double) const override
         {
-            Matrix g{4,4};
+            Matrix g(4, 4);
 
             g(0,0) = -c * c;
             g(1,1) = 1.0;
@@ -105,7 +105,7 @@ namespace BlackHole {
         // Metrix Tensor g_{\mu \nu}
         Matrix Metric(double r, double theta) const override
         {
-            Matrix g{4,4};
+            Matrix g(4, 4);
 
             double f = 1.0 - r_S / r;
 
@@ -216,7 +216,7 @@ namespace BlackHole {
         // Metric Tensor g_{\mu \nu}
         Matrix Metric(double r, double theta) const override
         {
-            Matrix g{4,4};  // Initializes a 4x4 matrix. All components are 0.0 to start out with
+            Matrix g(4, 4);  // Initializes a 4x4 matrix. All components are 0.0 to start out with
 
             // Store the spin parameter
             double a = params.a;

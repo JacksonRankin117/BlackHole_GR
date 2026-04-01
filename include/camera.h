@@ -5,6 +5,11 @@
 //#include "blackhole.h"
 
 // ------------------------------------------------------ Camera -------------------------------------------------------
+struct CameraBasis {
+    Vec3 right;
+    Vec3 up;
+};
+
 class Camera {
 public:
     Camera(int res_x, int res_y,                 // Resolution
@@ -19,25 +24,21 @@ public:
     }
 
     // Assume Minkowski spacetime
-    Ray GenerateRay(int px, int py) const
+    Ray GenerateRay(double px, double py) const
     {
-        // Convert pixel coordinates to NDC space [-1,1]
         double u = (px + 0.5) / width;
         double v = (py + 0.5) / height;
 
-        // Compute ray direction in NDC space
-        double aspect = double(width) / height;
-        double scale = std::tan(FOV * 0.5);
+        double aspect = double(width) / double(height);
+        double scale  = std::tan(FOV * 0.5);
 
-        // Convert NDC coordinates to ray direction
-        double px_ndc = (2.0*u - 1.0) * aspect * scale;
-        double py_ndc = (1.0 - 2.0*v) * scale;
+        double x = (2.0 * u - 1.0) * aspect * scale;
+        double y = (1.0 - 2.0 * v) * scale;
 
-        // Calculate the ray direction in world space
-        Math::Vec3 dir = (forward + px_ndc*right + py_ndc*up).Normalized();
+        Vec3 dir = (forward + x * right + y * up).Normalized();
 
-        // Return the ray
-        return Ray({1.0, position.X, position.Y, position.Z}, {1.0,dir.X, dir.Y, dir.Z});
+        return Ray({1.0, position.X, position.Y, position.Z},
+                {1.0, dir.X, dir.Y, dir.Z});
     }
 
     // Return the camera position
@@ -61,5 +62,47 @@ private:
 
         // Compute up vector using forward and right
         up    = Math::Vec3::Cross(forward, right).Normalized();
+    }
+
+    Ray GenerateJitteredRay(int px, int py, uint32_t& seed, float angle_scale) const
+    {
+        Ray base = GenerateRay(px, py);
+
+        Vec3 dir = base.Direction();
+
+        CameraBasis basis = GetBasis(dir);
+
+        auto rng = [](uint32_t& s) -> float {
+            s ^= s << 13;
+            s ^= s >> 17;
+            s ^= s << 5;
+            return (s & 0x00FFFFFFu) / float(0x01000000u);
+        };
+
+        float ax = rng(seed) - 0.5f;
+        float ay = rng(seed) - 0.5f;
+
+        Vec3 jittered =
+            dir
+            + ax * angle_scale * basis.right
+            + ay * angle_scale * basis.up;
+
+        jittered = jittered.Normalized();
+
+        return Ray(base.origin, {1.0, jittered.X, jittered.Y, jittered.Z});
+    }
+
+    CameraBasis GetBasis(const Vec3& dir) const
+    {
+        Vec3 worldUp = {0, 1, 0};
+
+        Vec3 right = Vec3::Cross(worldUp, dir);
+        if (right.Magnitude() < 1e-6)
+            right = Vec3::Cross({1, 0, 0}, dir);
+
+        right = right.Normalized();
+        Vec3 up = Vec3::Cross(dir, right);
+
+        return { right, up };
     }
 };

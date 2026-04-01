@@ -435,7 +435,10 @@ namespace Math {
             {
                 rows = 4;
                 cols = 4;
-                data = std::vector<double>(vals);
+                data.assign(16, 0.0);          // always allocate the full 4x4
+                size_t i = 0;
+                for (double v : vals)
+                    if (i < 16) data[i++] = v; // fill however many were provided
             }
 
             // ------------------------------------------- Matrix Properties -------------------------------------------

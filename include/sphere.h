@@ -17,7 +17,7 @@ public:
     {
         Math::Vec3 pos    = Spatial(ray.origin);
         Math::Vec3 center = Spatial(s_center);
-        Math::Vec3 dir    = ray.Direction();
+        Math::Vec3 dir    = ray.Direction().Normalized();
 
         Math::Vec3 oc = pos - center;
 
@@ -26,12 +26,17 @@ public:
         double c = Math::Vec3::Dot(oc, oc) - s_radius * s_radius;
 
         double discriminant = b * b - 4.0 * a * c;
-        if (discriminant < 0.0)
+
+        // Soft edge: blend over a narrow band around discriminant == 0.
+        // edge_width controls the feather width in world-space units squared.
+        double edge_width = s_radius * s_radius * 0.01;
+        if (discriminant < -edge_width)
             return false;
 
-        double sqrt_disc = std::sqrt(discriminant);
+        // Coverage goes from 0 (fully outside) to 1 (fully inside)
+        rec.coverage = std::clamp((discriminant + edge_width) / (2.0 * edge_width), 0.0, 1.0);
 
-        // Try the nearer root first
+        double sqrt_disc = std::sqrt(std::max(discriminant, 0.0));
         double t = (-b - sqrt_disc) / (2.0 * a);
         if (t < lambda_min || t > lambda_max) {
             t = (-b + sqrt_disc) / (2.0 * a);
@@ -39,11 +44,11 @@ public:
                 return false;
         }
 
-        rec.lambda = t;
-        rec.point  = ray.origin; // or interpolate along ray by t if your Ray supports it
+        rec.lambda   = t;
+        rec.point    = ray.origin;
         Math::Vec3 hit_point = pos + t * dir;
-        rec.normal = (hit_point - center) / s_radius;
-        rec.mat    = s_mat;
+        rec.normal   = (hit_point - center) / s_radius;
+        rec.mat      = s_mat;
         return true;
     }
 

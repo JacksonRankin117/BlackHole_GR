@@ -23,3 +23,13 @@ target_link_libraries(blackhole PRIVATE
     OpenEXR::OpenEXR
     pthread
 )
+
+# ---- Sanitizers (comment out for release builds) ----
+target_compile_options(blackhole PRIVATE
+    -fsanitize=address,undefined
+    -fno-omit-frame-pointer
+    -g
+)
+target_link_options(blackhole PRIVATE
+    -fsanitize=address,undefined
+)
