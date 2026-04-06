@@ -15,6 +15,8 @@
  *
  */
 
+// include/math_objects.h
+
 #pragma once
 
 // Standard library header files, arranged alphabetically for readability
@@ -475,6 +477,57 @@ namespace Math {
                 return det;
             }
 
+            Matrix Inverse() const {
+                if (rows != cols) throw std::invalid_argument("Matrix must be square.");
+                size_t n = rows;
+
+                // Augment [A | I]
+                Matrix aug(n, 2*n, 0.0);
+                for (size_t i = 0; i < n; ++i)
+                    for (size_t j = 0; j < n; ++j) {
+                        aug(i, j)   = (*this)(i, j);
+                        aug(i, j+n) = (i == j) ? 1.0 : 0.0;
+                    }
+
+                // Forward elimination with partial pivoting
+                for (size_t col = 0; col < n; ++col) {
+                    // Find pivot
+                    size_t pivot = col;
+                    for (size_t row = col+1; row < n; ++row)
+                        if (std::abs(aug(row, col)) > std::abs(aug(pivot, col)))
+                            pivot = row;
+
+                    if (std::abs(aug(pivot, col)) < epsilon)
+                        throw std::runtime_error("Matrix is singular.");
+
+                    // Swap rows
+                    if (pivot != col)
+                        for (size_t j = 0; j < 2*n; ++j)
+                            std::swap(aug(col, j), aug(pivot, j));
+
+                    // Scale pivot row
+                    double scale = aug(col, col);
+                    for (size_t j = 0; j < 2*n; ++j)
+                        aug(col, j) /= scale;
+
+                    // Eliminate column
+                    for (size_t row = 0; row < n; ++row) {
+                        if (row == col) continue;
+                        double factor = aug(row, col);
+                        for (size_t j = 0; j < 2*n; ++j)
+                            aug(row, j) -= factor * aug(col, j);
+                    }
+                }
+
+                // Extract right half
+                Matrix inv(n, n, 0.0);
+                for (size_t i = 0; i < n; ++i)
+                    for (size_t j = 0; j < n; ++j)
+                        inv(i, j) = aug(i, j+n);
+
+                return inv;
+            }
+            
             static Matrix Identity(size_t n) {
                 Matrix res(n, n, 0.0);
                 for (size_t i = 0; i < n; ++i) res(i, i) = 1.0;

@@ -56,7 +56,7 @@ public:
 
             Math::Vec4 x = seg.a.x * (1.0 - t) + seg.b.x * t;
 
-            Ray ray(x, seg.a.k); // tangent approximation
+            Ray ray(x, seg.a.p); // tangent approximation
 
             if (Intersect(ray, 0.0, 1e7, rec))
                 return true;

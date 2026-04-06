@@ -24,10 +24,11 @@ struct Christoffel {
 
 namespace BlackHole {
     // Fundamental constants in SI
-    inline constexpr double G = 6.67430e-11;     // Newton's constant
-    inline constexpr double c = 299792458.0;     // Speed of light in m/s
-    inline constexpr double M_Solar = 1.989e30;  // Mass of the sun in kgs
-    inline constexpr double AU = 1.496e11;       // Astronomical unit in meters
+    inline constexpr double G = 6.67430e-11;            // Newton's constant
+    inline constexpr double c = 299792458.0;            // Speed of light in m/s
+    inline constexpr double M_Solar = 1.989e30;         // Mass of the sun in kgs
+    inline constexpr double AU = 1.496e11;              // Astronomical unit in meters
+    inline constexpr double SIGMA_SB = 5.670374419e-8;  // W m⁻² K⁻⁴
 
     // Shared parameters
     struct Parameters {
@@ -46,7 +47,8 @@ namespace BlackHole {
             virtual ~Spacetime() = default;
             virtual Matrix Metric(double r, double theta) const = 0;
 
-            virtual Christoffel ChristoffelSymbols(double r, double theta) const = 0;
+            virtual Christoffel ChristoffelSymbols(double r, double theta,
+                                        double sinT, double cosT) const = 0;
 
             virtual double EventHorizon() const = 0;
     };
@@ -78,9 +80,9 @@ namespace BlackHole {
         }
 
         // All Christoffels vanish
-        Christoffel ChristoffelSymbols(double, double) const override
+        Christoffel ChristoffelSymbols(double, double, double, double) const override
         {
-            return Christoffel{}; // Initialize as a zero-tensor
+            return Christoffel{};
         }
     };
 
@@ -118,41 +120,57 @@ namespace BlackHole {
             return g;
         }
 
-        // Christoffel Symbols
-        Christoffel ChristoffelSymbols(double r, double theta) const override {
+        Christoffel ChristoffelSymbols(double r, double theta, 
+                                       double sinT, double cosT) const override
+        {
             Christoffel Gamma;
 
-            double f = 1.0 - r_S / r;
-            double r2 = r*r;
-            double sinT = sin(theta);
-            double cosT = cos(theta);
+            double f    = 1.0 - r_S / r;
+            double r2   = r * r;
+            // sinT and cosT passed in directly for optimization
+
+            constexpr double pole_eps = 1e-10;
+            double sinT_safe = std::copysign(std::max(std::abs(sinT), pole_eps), sinT);
+
+            // Gamma^t_tr
+            Gamma(0,0,1) = r_S / (2 * r2 * f);
+
+            // Gamma^t_rt (symmetric)
+            Gamma(0,1,0) = r_S / (2 * r2 * f);
 
             // Gamma^r_tt
             Gamma(1,0,0) = r_S * c * c * f / (2*r2);
 
             // Gamma^r_rr
-            Gamma(1,1,1) = - r_S / (2 * r2 * f);
+            Gamma(1,1,1) = -r_S / (2 * r2 * f);
 
             // Gamma^r_(theta theta)
-            Gamma(1,2,2) = - r * f;
+            Gamma(1,2,2) = -r * f;
 
             // Gamma^r_(phi phi)
-            Gamma(1,3,3) = - r * f * sinT*sinT;
+            Gamma(1,3,3) = -r * f * sinT * sinT;
 
-            // Gamma^theta_(r theta) = Gamma^theta_(theta r)
+            // Gamma^theta_(r theta)
             Gamma(2,1,2) = 1.0 / r;
             Gamma(2,2,1) = 1.0 / r;
 
             // Gamma^theta_(phi phi)
-            Gamma(2,3,3) = - sinT * cosT;
+            Gamma(2,3,3) = -sinT * cosT;
 
-            // Gamma^phi_(r phi) = Gamma^phi_(phi r)
+            // Gamma^phi_(r phi)
             Gamma(3,1,3) = 1.0 / r;
             Gamma(3,3,1) = 1.0 / r;
 
-            // Gamma^phi_(theta phi) = Gamma^phi_(phi theta)
-            Gamma(3,2,3) = cosT / sinT;
-            Gamma(3,3,2) = cosT / sinT;
+            // Gamma^phi_(theta phi)
+            if (std::abs(sinT) < pole_eps) {
+                // Hopefully, this avoids any numerical unstability from cotT at small T
+                Gamma(3,2,3) = 0.0;
+                Gamma(3,3,2) = 0.0;
+            } else {
+                // If if 
+                Gamma(3,2,3) = cosT / sinT;
+                Gamma(3,3,2) = cosT / sinT;
+            }
 
             return Gamma;
         }

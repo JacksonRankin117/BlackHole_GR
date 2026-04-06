@@ -1,7 +1,7 @@
 [
 {
   "directory": "/Users/jacksonrankin/Developer/BlackHole_GR/build",
-  "command": "/usr/bin/c++  -I/Users/jacksonrankin/Developer/BlackHole_GR/include -isystem /opt/homebrew/include -isystem /opt/homebrew/include/OpenEXR -isystem /opt/homebrew/include/Imath -g -std=gnu++20 -arch arm64 -fsanitize=address,undefined -fno-omit-frame-pointer -g -o CMakeFiles/blackhole.dir/src/main.cpp.o -c /Users/jacksonrankin/Developer/BlackHole_GR/src/main.cpp",
+  "command": "/usr/bin/clang++  -I/Users/jacksonrankin/Developer/BlackHole_GR/include -isystem /opt/homebrew/include -isystem /opt/homebrew/include/OpenEXR -isystem /opt/homebrew/include/Imath -g -std=gnu++20 -arch arm64 -fsanitize=address,undefined -fno-omit-frame-pointer -g -o CMakeFiles/blackhole.dir/src/main.cpp.o -c /Users/jacksonrankin/Developer/BlackHole_GR/src/main.cpp",
   "file": "/Users/jacksonrankin/Developer/BlackHole_GR/src/main.cpp",
   "output": "CMakeFiles/blackhole.dir/src/main.cpp.o"
 }

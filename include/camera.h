@@ -26,8 +26,8 @@ public:
     // Assume Minkowski spacetime
     Ray GenerateRay(double px, double py) const
     {
-        double u = (px + 0.5) / width;
-        double v = (py + 0.5) / height;
+        double u = px / width;
+        double v = py / height;
 
         double aspect = double(width) / double(height);
         double scale  = std::tan(FOV * 0.5);
@@ -38,7 +38,7 @@ public:
         Vec3 dir = (forward + x * right + y * up).Normalized();
 
         return Ray({1.0, position.X, position.Y, position.Z},
-                {1.0, dir.X, dir.Y, dir.Z});
+                   {1.0, dir.X,      dir.Y,      dir.Z     });
     }
 
     // Return the camera position

@@ -1,3 +1,5 @@
+// include/thread_manager.h
+
 #pragma once
 
 #include <thread>
@@ -46,40 +48,36 @@ public:
         const int total = width * height;
         std::vector<Color> framebuffer(total);
         std::atomic<int> next_pixel{0};
-
-        // Tracks how many pixels have been fully written across all threads.
-        // Used for progress reporting. Incremented atomically so only one thread
-        // prints at a time (no interleaved output).
         std::atomic<int> pixels_done{0};
 
         // Number of samples per pixel for anti-aliasing.
         // 4 = good default. 1 = AA disabled. 16 = high quality.
-        constexpr int SAMPLES_PER_PIXEL = 4;
+        constexpr int SAMPLES_PER_PIXEL = 1;
 
-        // Exposure for tone mapping
-        constexpr float EXPOSURE = 10.0f;
+        // Exposure scale applied before tone-mapping.
+        // With T^4 luminance scaling in FromBlackbody (T_ref = 1e6 K),
+        // disk pixels arrive with raw values roughly in [0.01, 100].
+        // Tune this so the brightest disk region sits around 1.0–5.0
+        // after multiplication — Reinhard will compress the rest.
+        constexpr float EXPOSURE = 5.0f;
 
         // Chunk size: how many pixels each thread grabs at once.
-        // Larger chunks = less atomic contention. Smaller = better load balancing.
         constexpr int CHUNK = 8;
 
         // Fast xorshift32 RNG — produces a float in [0, 1).
-        // Passed by reference so state advances with each call.
-        auto rng = [](uint32_t& state) -> float {
-            state ^= state << 13;
-            state ^= state >> 17;
-            state ^= state << 5;
-            return (state & 0x00FFFFFFu) / float(0x01000000u);
+        auto rand01 = [](uint32_t& s) -> float {
+            s ^= s << 13;
+            s ^= s >> 17;
+            s ^= s << 5;
+            return (s & 0x00FFFFFFu) / float(0x01000000u);
         };
 
-        // Start the stopwatch before launching threads
         sw.Start();
 
         auto worker = [&]()
         {
             while (true)
             {
-                // Atomically grab the next chunk of pixels
                 int start = next_pixel.fetch_add(CHUNK);
                 if (start >= total)
                     break;
@@ -87,87 +85,92 @@ public:
                 for (int i = 0; i < CHUNK; ++i)
                 {
                     int idx = start + i;
-                    if (idx >= total)
-                        break;
+                    if (idx >= total) break;
 
                     int x = idx % width;
                     int y = idx / width;
 
-                    // Per-pixel RNG seed — unique per pixel, independent across threads
+                    // Per-pixel RNG seed
                     uint32_t seed = static_cast<uint32_t>(y * 1973 + x * 9277 + 1);
+                    rand01(seed);
+                    rand01(seed);
 
-                    // Accumulate raw (pre-tonemapped) color over N samples
+                    // ------------------------------------------------
+                    // 1. Accumulate raw LINEAR HDR samples
+                    // ------------------------------------------------
                     Color accumulated = {0.0f, 0.0f, 0.0f};
 
                     for (int s = 0; s < SAMPLES_PER_PIXEL; ++s)
                     {
-                        // Jittered sub-pixel offset in [-0.5, +0.5]
-                        float offset_x = rng(seed) - 0.5f;
-                        float offset_y = rng(seed) - 0.5f;
+                        float offset_x = (s == 0) ? 0.0f : rand01(seed) - 0.5f;
+                        float offset_y = (s == 0) ? 0.0f : rand01(seed) - 0.5f;
 
-                        // Generate photon with fractional pixel coordinates
                         GeodesicState photon = PhotonFromCamera(cam,
                                                                 x + offset_x,
                                                                 y + offset_y,
                                                                 spacetime);
 
-                        // Trace through curved spacetime
                         TraceResult result = TracePhotonAdaptive(photon, spacetime, world);
 
-                        // Shade the result
                         Color sample;
 
                         if (result.captured)
                         {
-                            // Photon fell into the black hole
                             sample = {0.0f, 0.0f, 0.0f};
                         }
                         else if (result.mat)
                         {
-                            // Use the Cartesian ray stored in TraceResult (set at hit time)
-                            Color sphere_color = result.mat->Shade(result.ray, result.hit);
-                            Color bg_color     = SamplePhoton(result.state, star_map);
+                            Color obj_color = result.mat->Shade(result.ray, result.hit);
+                            Color bg_color  = SamplePhoton(result.state, star_map);
 
-                            // Blend sphere and background by edge coverage weight.
-                            // coverage = 1.0 for fully inside hits, tapers to 0 at the edge.
-                            float w   = static_cast<float>(result.hit.coverage);
-                            sample.r  = w * sphere_color.r + (1.0f - w) * bg_color.r;
-                            sample.g  = w * sphere_color.g + (1.0f - w) * bg_color.g;
-                            sample.b  = w * sphere_color.b + (1.0f - w) * bg_color.b;
+                            float w  = static_cast<float>(result.hit.coverage);
+                            sample.r = w * obj_color.r + (1.0f - w) * bg_color.r;
+                            sample.g = w * obj_color.g + (1.0f - w) * bg_color.g;
+                            sample.b = w * obj_color.b + (1.0f - w) * bg_color.b;
                         }
                         else
                         {
-                            // Photon escaped to the background starmap
                             sample = SamplePhoton(result.state, star_map);
                         }
+
+                        // Guard NaN/Inf
+                        if (!std::isfinite(sample.r)) sample.r = 0.0f;
+                        if (!std::isfinite(sample.g)) sample.g = 0.0f;
+                        if (!std::isfinite(sample.b)) sample.b = 0.0f;
 
                         accumulated.r += sample.r;
                         accumulated.g += sample.g;
                         accumulated.b += sample.b;
                     }
 
-                    // Average the samples
+                    // ------------------------------------------------
+                    // 2. Average samples
+                    // ------------------------------------------------
                     float inv = 1.0f / static_cast<float>(SAMPLES_PER_PIXEL);
-                    Color pixel;
-                    pixel.r = accumulated.r * inv;
-                    pixel.g = accumulated.g * inv;
-                    pixel.b = accumulated.b * inv;
+                    Color pixel = accumulated * inv;
 
-                    // Tone mapping — applied once after averaging
-                    pixel.r = 1.0f - std::exp(-EXPOSURE * pixel.r);
-                    pixel.g = 1.0f - std::exp(-EXPOSURE * pixel.g);
-                    pixel.b = 1.0f - std::exp(-EXPOSURE * pixel.b);
+                    // ------------------------------------------------
+                    // 3. Exposure + ACES tone mapping
+                    // ------------------------------------------------
+                    auto aces = [](float x) -> float {
+                        const float a = 2.51f, b = 0.03f, c = 2.43f, d = 0.59f, e = 0.14f;
+                        return std::clamp((x*(a*x+b))/(x*(c*x+d)+e), 0.0f, 1.0f);
+                    };
 
-                    // Gamma correction
-                    pixel.r = std::pow(pixel.r, 1.0f / 2.2f);
-                    pixel.g = std::pow(pixel.g, 1.0f / 2.2f);
-                    pixel.b = std::pow(pixel.b, 1.0f / 2.2f);
+                    //pixel.r = aces(pixel.r * EXPOSURE);
+                    //pixel.g = aces(pixel.g * EXPOSURE);
+                    //pixel.b = aces(pixel.b * EXPOSURE);
+
+                    // ------------------------------------------------
+                    // 4. Gamma correction (linear → sRGB display)
+                    // ------------------------------------------------
+                    //pixel.r = std::pow(std::max(pixel.r, 0.0f), 1.0f / 2.2f);
+                    //pixel.g = std::pow(std::max(pixel.g, 0.0f), 1.0f / 2.2f);
+                    //pixel.b = std::pow(std::max(pixel.b, 0.0f), 1.0f / 2.2f);
 
                     framebuffer[idx] = pixel;
 
                     // ---- Progress reporting ----
-                    // Only one thread prints at a time. We use fetch_add so the count
-                    // is always accurate even with many threads writing simultaneously.
                     int done = pixels_done.fetch_add(1) + 1;
                     if (done % 100 == 0 || done == total)
                         sw.DisplayProgress(done, total);
@@ -181,11 +184,25 @@ public:
         for (unsigned int i = 0; i < tm_thread_count; ++i)
             threads.emplace_back(worker);
 
-        // Wait for all threads to finish
         for (auto& t : threads)
             t.join();
+                
+        // Fix seam at center column
+    int seam_x = width / 2;
+    for (int dx = -2; dx <= 2; ++dx) {
+        int x = seam_x + dx;
+        if (x < 5 || x >= width - 5) continue;
+        for (int y = 0; y < height; ++y) {
+            int idx = y * width + x;
+            // Sample 5 pixels out instead of 3
+            Color l = framebuffer[y * width + (x - 5)];
+            Color r = framebuffer[y * width + (x + 5)];
+            framebuffer[idx].r = (l.r + r.r) * 0.5f;
+            framebuffer[idx].g = (l.g + r.g) * 0.5f;
+            framebuffer[idx].b = (l.b + r.b) * 0.5f;
+        }
+    }
 
-        // Stop the stopwatch and print the final completed bar
         sw.Stop();
         sw.Finish();
 

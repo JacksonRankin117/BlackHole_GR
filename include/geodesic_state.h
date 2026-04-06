@@ -4,34 +4,20 @@
 
 // ------------------------------------- Stores the state of a geodesic trajectory -------------------------------------
 struct GeodesicState {
-    Math::Vec4 x;
-    Math::Vec4 k;
+    Math::Vec4 x{};  // coordinate position  (t, r, θ, φ)
+    Math::Vec4 p{};  // frame-basis momentum
 
-    GeodesicState operator+(const GeodesicState& b) const {
-        GeodesicState out;
-        for(int i=0;i<4;i++){
-            out.x[i] = x[i] + b.x[i];
-            out.k[i] = k[i] + b.k[i];
-        }
-        return out;
+    GeodesicState operator+(const GeodesicState& o) const {
+        GeodesicState r;
+        r.x = x + o.x;
+        r.p = p + o.p;
+        return r;
     }
-
     GeodesicState operator*(double s) const {
-        GeodesicState out;
-        for(int i=0;i<4;i++){
-            out.x[i] = s * x[i];
-            out.k[i] = s * k[i];
-        }
-        return out;
-    }
-
-    friend GeodesicState operator*(double s, const GeodesicState& a) {
-        GeodesicState out;
-        for(int i=0;i<4;i++){
-            out.x[i] = s * a.x[i];
-            out.k[i] = s * a.k[i];
-        }
-        return out;
+        GeodesicState r;
+        r.x = x * s;
+        r.p = p * s;
+        return r;
     }
 };
-
+inline GeodesicState operator*(double s, const GeodesicState& g) { return g * s; }

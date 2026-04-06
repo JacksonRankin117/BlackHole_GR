@@ -43,3 +43,21 @@ public:
 private:
     double T;
 };
+
+class Emissive : public Material {
+public:
+    Emissive(const Color& color, float scale) noexcept
+        : e_color(color), e_scale(scale) {}
+
+    Color Shade(const Ray&,
+                const HitRecord&) const noexcept override
+    {
+        return Color{ e_color.r * e_scale,
+                      e_color.g * e_scale,
+                      e_color.b * e_scale };
+    }
+
+private:
+    Color  e_color;
+    float  e_scale;
+};

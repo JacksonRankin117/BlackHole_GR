@@ -8,12 +8,16 @@
 class Material;
 
 // ----------------------------------------------------- HitRecord -----------------------------------------------------
+#include "color.h"
+
 struct HitRecord {
-    Math::Vec4 point;     // Where the ray hit the hittable
-    Math::Vec3 normal;    // spatial surface normal
-    double lambda;        // distance along the ray to the hit point
-    double coverage = 1.0;                   // Edge coverage weight [0,1]. 1 = fully inside, 0 = fully outside
-    std::shared_ptr<Material> mat = nullptr;  // material at the hit point
+    Math::Vec4 point;
+    Math::Vec3 normal;
+    double     lambda;
+    double     coverage      = 1.0;
+    Color      emission      = {};
+    double     emissionScale = 0.0;
+    std::shared_ptr<Material> mat = nullptr;
 };
 
 // ----------------------------------------------------- Hittable ------------------------------------------------------

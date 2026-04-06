@@ -3,5 +3,5 @@
 
 struct GeodesicState {
     Math::Vec4 x;
-    Math::Vec4 k;
+    Math::Vec4 p;
 };

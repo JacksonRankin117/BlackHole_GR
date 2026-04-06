@@ -45,27 +45,47 @@ public:
     // ----------------------------------------------- Background Color ------------------------------------------------
     Color Sample(const Math::Vec3& dir) const
     {
-        // Declination of the star map
         double theta = std::acos(std::clamp(dir.Z, -1.0, 1.0));
+        double phi   = std::atan2(dir.Y, dir.X);
+        if (phi < 0) phi += 2 * M_PI;
 
-        // Right Ascension
-        double phi = std::atan2(-dir.X, dir.Y);
-
-        // Wrap phi to [0, 2*M_PI)
-        if (phi < 0) phi += 2*M_PI;
-
-        // Map to texture coordinates
-        double u = phi / (2*M_PI);
+        double u = phi / (2 * M_PI);
         double v = theta / M_PI;
 
-        // Clamp to [0, 1] and convert to pixel indices
-        int x = std::clamp(int(u * width), 0, width - 1);
-        int y = std::clamp(int(v * height), 0, height - 1);
+        // Bilinear sample with φ-wrapping
+        double fx = u * width  - 0.5;
+        double fy = v * height - 0.5;
 
-        // Convert pixel color to Color
-        const Imf::Rgba& px = pixels[y][x];
+        int x0 = static_cast<int>(std::floor(fx));
+        int y0 = static_cast<int>(std::floor(fy));
+        int x1 = x0 + 1;
+        int y1 = y0 + 1;
 
-        // Return the color
-        return Color(px.r, px.g, px.b);
+        double tx = fx - x0;
+        double ty = fy - y0;
+
+        // Wrap x (φ is periodic), clamp y (θ has poles)
+        x0 = ((x0 % width) + width) % width;
+        x1 = ((x1 % width) + width) % width;
+        y0 = std::clamp(y0, 0, height - 1);
+        y1 = std::clamp(y1, 0, height - 1);
+
+        auto get = [&](int x, int y) -> Color {
+            const Imf::Rgba& px = pixels[y][x];
+            return Color(px.r, px.g, px.b);
+        };
+
+        Color c00 = get(x0, y0);
+        Color c10 = get(x1, y0);
+        Color c01 = get(x0, y1);
+        Color c11 = get(x1, y1);
+
+        // Bilinear interpolation
+        float ftx = static_cast<float>(tx);
+        float fty = static_cast<float>(ty);
+
+        Color top    = c00 * (1.0f - ftx) + c10 * ftx;
+        Color bottom = c01 * (1.0f - ftx) + c11 * ftx;
+        return top * (1.0f - fty) + bottom * fty;
     }
 };
